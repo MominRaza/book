@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { LibraryStoreService } from '../services/library-store';
 import { FileDebug } from './file-debug';
@@ -30,6 +31,7 @@ import { FileDebug } from './file-debug';
         <ul>
           @for (file of store.books(); track file.relativePath) {
             <li>
+              <button type="button" (click)="read(file.relativePath)">Read</button>
               <strong>{{ file.relativePath }}</strong>
               <app-file-debug [file]="file" />
             </li>
@@ -41,4 +43,9 @@ import { FileDebug } from './file-debug';
 })
 export class BooksSection {
   protected readonly store = inject(LibraryStoreService);
+  private readonly router = inject(Router);
+
+  protected async read(relativePath: string): Promise<void> {
+    await this.router.navigate(['/reader'], { queryParams: { path: relativePath } });
+  }
 }

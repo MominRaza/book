@@ -114,6 +114,14 @@ export class LibraryStoreService {
     return !!this.booksDirHandle() && !!this.audiobooksDirHandle();
   }
 
+  getBooksDirectoryHandle(): FileSystemDirectoryHandle | null {
+    return this.booksDirHandle();
+  }
+
+  getAudiobooksDirectoryHandle(): FileSystemDirectoryHandle | null {
+    return this.audiobooksDirHandle();
+  }
+
   async scanAndPersist(): Promise<void> {
     const booksHandle = this.booksDirHandle();
     const audioHandle = this.audiobooksDirHandle();
@@ -155,7 +163,7 @@ export class LibraryStoreService {
   async playAudiobook(file: ScannedFile): Promise<void> {
     this.playerErrorMessage.set(null);
 
-    const audioHandle = this.audiobooksDirHandle();
+    const audioHandle = this.getAudiobooksDirectoryHandle();
     if (!audioHandle) {
       this.playerErrorMessage.set('Audiobooks folder is not set. Go to setup and choose it again.');
       return;

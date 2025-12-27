@@ -17,6 +17,11 @@ export const routes: Routes = [
 		title: 'Book - Library',
 	},
 	{
+		path: 'reader',
+		loadComponent: () => import('./pages/reader').then((m) => m.Reader),
+		title: 'Book - Reader',
+	},
+	{
 		path: '**',
 		redirectTo: '',
 	},
