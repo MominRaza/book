@@ -1,1 +1,82 @@
-/* You can add global styles to this file, and also import other style files */
+/* Minimal global styling (uses system colors for good contrast). */
+
+:root {
+    color-scheme: light;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: Canvas;
+    color: CanvasText;
+}
+
+main {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.25rem;
+    padding-bottom: 8rem;
+}
+
+h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin: 0 0 1rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    margin: 1.5rem 0 0.75rem;
+}
+
+h3 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+}
+
+p {
+    margin: 0.5rem 0;
+}
+
+a {
+    color: LinkText;
+}
+
+button {
+    appearance: none;
+    border: 1px solid GrayText;
+    background: ButtonFace;
+    color: ButtonText;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+}
+
+section {
+    margin: 1rem 0;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* List and debug styles moved to component-local styles */
+
+/* Player styles moved into the AudiobookPlayer component */
