@@ -1,9 +1,3 @@
-/* Minimal global styling (uses system colors for good contrast). */
-
-:root {
-    color-scheme: light;
-}
-
 html,
 body {
     height: 100%;
@@ -76,7 +70,3 @@ ul {
     padding: 0;
     margin: 0;
 }
-
-/* List and debug styles moved to component-local styles */
-
-/* Player styles moved into the AudiobookPlayer component */

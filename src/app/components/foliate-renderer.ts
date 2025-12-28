@@ -6,6 +6,7 @@ type FoliateElement = HTMLElement & {
   goTo: (target: { index: number }) => void;
   prev: () => void;
   next: () => void;
+  setStyles: (styles: string) => void;
   destroy: () => void;
 };
 
@@ -18,6 +19,11 @@ type EPUBType = {
 @Component({
   selector: "foliate-renderer",
   template: ``,
+  styles: `
+    :host {
+      outline: none;
+    }
+  `,
   host: {
     tabindex: "0",
     "(keydown)": "onKeydown($event)",
@@ -25,7 +31,6 @@ type EPUBType = {
 })
 export class FoliateRenderer implements OnInit, OnDestroy {
   path = input.required<string>();
-  index = input<number>(0);
   file = inject(FileService);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
   private foliate?: FoliateElement;
@@ -50,7 +55,17 @@ export class FoliateRenderer implements OnInit, OnDestroy {
     });
 
     this.foliate.open(this.epub);
-    this.foliate.goTo({ index: this.index() });
+    this.foliate.setStyles(`
+      :root { color-scheme: light dark }
+      @media (prefers-color-scheme: dark) { a:link { color: lightblue } }
+      p, li, blockquote, dd { line-height: 1.4; text-align: justify; hyphens: auto; widows: 2 }
+      [align="left"] { text-align: left }
+      [align="right"] { text-align: right }
+      [align="center"] { text-align: center }
+      [align="justify"] { text-align: justify }
+      pre { white-space: pre-wrap !important }
+    `);
+    this.foliate.next();
     this.elementRef.nativeElement.appendChild(this.foliate);
     this.elementRef.nativeElement.focus();
   }
