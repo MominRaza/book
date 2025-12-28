@@ -34,9 +34,9 @@ type EPUBType = {
     }
     button {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1;
       transition: left 0.3s ease-in-out;
 
       &.show {
