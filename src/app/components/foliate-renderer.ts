@@ -1,5 +1,7 @@
-import { Component, ElementRef, inject, input, OnDestroy, OnInit } from "@angular/core";
+import { Component, ElementRef, inject, input, OnDestroy, OnInit, signal } from "@angular/core";
 import { FileService } from "../services/file";
+import { Metadata, TOC } from "../models/epub";
+import { Sidebar } from "./sidebar";
 
 type FoliateElement = HTMLElement & {
   open: (book: unknown) => void;
@@ -11,17 +13,35 @@ type FoliateElement = HTMLElement & {
 };
 
 type EPUBType = {
+  metadata: Metadata;
+  toc: TOC[];
+  getCover: () => Promise<Blob | undefined>;
+  sections: { resolveHref: (href: string) => string }[];
   resolveHref: (href: string) => { index: number; anchor: string | null };
   isExternal: (href: string) => boolean;
-  sections: { resolveHref: (href: string) => string }[];
 };
 
 @Component({
   selector: "foliate-renderer",
-  template: ``,
+  imports: [Sidebar],
+  template: `
+    <button [class.show]="showSidebar()" (click)="showSidebar.set(!showSidebar())">Toggle Sidebar</button>
+    <app-sidebar [metadata]="metadata()" [coverUrl]="coverUrl()" [toc]="toc()" [show]="showSidebar()" (goTo)="showSidebar.set(!showSidebar()); goTo($event)" />
+  `,
   styles: `
     :host {
       outline: none;
+    }
+    button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      transition: left 0.3s ease-in-out;
+
+      &.show {
+        left: calc(10px + var(--sidebar-width));
+      }
     }
   `,
   host: {
@@ -36,10 +56,19 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   private foliate?: FoliateElement;
   private epub?: EPUBType;
   private readonly attachedDocs = new Set<Document>();
+  metadata = signal<Metadata | undefined>(undefined);
+  coverUrl = signal<string | undefined>(undefined);
+  toc = signal<TOC[] | undefined>(undefined);
+  showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
     const { EPUB } = await import("foliate-js/epub.js");
     this.epub = (await new EPUB(await this.zipLoader()).init()) as EPUBType;
+    this.metadata.set(this.epub.metadata);
+    this.toc.set(this.epub.toc);
+    console.log(this.epub.toc);
+    const coverBlob = await this.epub.getCover();
+    if (coverBlob) this.coverUrl.set(URL.createObjectURL(coverBlob));
 
     await import("foliate-js/paginator.js");
     this.foliate = document.createElement("foliate-paginator") as FoliateElement;
@@ -127,6 +156,10 @@ export class FoliateRenderer implements OnInit, OnDestroy {
       return;
     }
     href = this.epub?.sections[index].resolveHref(href) ?? href;
+    this.goTo(href);
+  }
+
+  goTo(href: string): void {
     const resolved = this.epub?.resolveHref(href);
     if (resolved) this.foliate?.goTo(resolved);
   }
