@@ -1,4 +1,6 @@
-export type LibraryFileKind = 'book' | 'audiobook';
+import type { Metadata } from "./epub";
+
+export type LibraryFileKind = "book" | "audiobook";
 
 export interface ScannedFile {
   kind: LibraryFileKind;
@@ -10,6 +12,10 @@ export interface ScannedFile {
   mimeType: string | null;
   lastModifiedMs: number | null;
   lastModifiedIso: string | null;
+
+  // Only populated for `kind: 'book'` (EPUB)
+  epubMetadata?: Metadata | null;
+  coverBlob?: Blob | null;
 }
 
 export interface PersistedLibraryCache {

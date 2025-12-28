@@ -1,13 +1,15 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from "@angular/core";
 
-import { PersistedLibraryCache, ScannedFile } from '../models/library';
-import { FsAccessService } from './fs-access';
-import { PersistenceService } from './persistence';
+import { PersistedLibraryCache, ScannedFile } from "../models/library";
+import { FsAccessService } from "./fs-access";
+import { PersistenceService } from "./persistence";
+import { EpubService } from "./epub";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class LibraryStoreService {
   private readonly persistence = inject(PersistenceService);
   private readonly fs = inject(FsAccessService);
+  private readonly epubService = inject(EpubService);
 
   private initialized = false;
 
@@ -61,6 +63,8 @@ export class LibraryStoreService {
             mimeType: item.mimeType ?? null,
             lastModifiedMs: item.lastModifiedMs ?? null,
             lastModifiedIso: item.lastModifiedIso ?? null,
+            epubMetadata: item.epubMetadata ?? null,
+            coverBlob: item.coverBlob ?? null,
           }));
 
         this.books.set(normalize(cache.books ?? []));
@@ -71,7 +75,7 @@ export class LibraryStoreService {
       this.initialized = true;
     } catch (err) {
       this.loading.set(false);
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to load cached library.');
+      this.errorMessage.set(err instanceof Error ? err.message : "Failed to load cached library.");
       this.initialized = true;
     }
   }
@@ -89,7 +93,7 @@ export class LibraryStoreService {
         this.persistence.setBooksFolderName(handle.name),
       ]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to pick books folder.');
+      this.errorMessage.set(err instanceof Error ? err.message : "Failed to pick books folder.");
     }
   }
 
@@ -106,7 +110,9 @@ export class LibraryStoreService {
         this.persistence.setAudiobooksFolderName(handle.name),
       ]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to pick audiobooks folder.');
+      this.errorMessage.set(
+        err instanceof Error ? err.message : "Failed to pick audiobooks folder.",
+      );
     }
   }
 
@@ -127,7 +133,7 @@ export class LibraryStoreService {
     const audioHandle = this.audiobooksDirHandle();
 
     if (!booksHandle || !audioHandle) {
-      this.errorMessage.set('Please pick both folders before continuing.');
+      this.errorMessage.set("Please pick both folders before continuing.");
       return;
     }
 
@@ -135,16 +141,18 @@ export class LibraryStoreService {
     this.errorMessage.set(null);
 
     try {
-      const [books, audiobooks] = await Promise.all([
+      const [scannedBooks, audiobooks] = await Promise.all([
         this.fs.scanForEpubs(booksHandle),
         this.fs.scanForAudiobooks(audioHandle),
       ]);
+
+      const books = await this.enrichBooksWithEpubDetails(booksHandle, scannedBooks);
 
       this.books.set(books);
       this.audiobooks.set(audiobooks);
 
       const cache: PersistedLibraryCache = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         booksFolderName: this.booksFolderName(),
         audiobooksFolderName: this.audiobooksFolderName(),
         scannedAtIso: new Date().toISOString(),
@@ -156,7 +164,7 @@ export class LibraryStoreService {
       this.loading.set(false);
     } catch (err) {
       this.loading.set(false);
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to scan folders.');
+      this.errorMessage.set(err instanceof Error ? err.message : "Failed to scan folders.");
     }
   }
 
@@ -165,7 +173,7 @@ export class LibraryStoreService {
 
     const audioHandle = this.getAudiobooksDirectoryHandle();
     if (!audioHandle) {
-      this.playerErrorMessage.set('Audiobooks folder is not set. Go to setup and choose it again.');
+      this.playerErrorMessage.set("Audiobooks folder is not set. Go to setup and choose it again.");
       return;
     }
 
@@ -181,7 +189,7 @@ export class LibraryStoreService {
       this.nowPlaying.set(file);
     } catch (err) {
       this.playerErrorMessage.set(
-        err instanceof Error ? err.message : 'Failed to open the selected audiobook.',
+        err instanceof Error ? err.message : "Failed to open the selected audiobook.",
       );
     }
   }
@@ -209,5 +217,61 @@ export class LibraryStoreService {
     this.audiobooks.set([]);
 
     this.loading.set(false);
+  }
+
+  private async enrichBooksWithEpubDetails(
+    booksRoot: FileSystemDirectoryHandle,
+    scannedBooks: ScannedFile[],
+  ): Promise<ScannedFile[]> {
+    const previousByPath = new Map(this.books().map((b) => [b.relativePath, b] as const));
+    const results = scannedBooks.slice();
+
+    let nextIndex = 0;
+    const concurrency = 3;
+
+    const worker = async () => {
+      while (true) {
+        const index = nextIndex++;
+        if (index >= results.length) return;
+
+        const scanned = results[index]!;
+        const previous = previousByPath.get(scanned.relativePath);
+
+        const unchanged =
+          !!previous &&
+          previous.sizeBytes === scanned.sizeBytes &&
+          previous.lastModifiedMs === scanned.lastModifiedMs;
+
+        if (unchanged) {
+          results[index] = {
+            ...scanned,
+            epubMetadata: previous.epubMetadata ?? null,
+            coverBlob: previous.coverBlob ?? null,
+          };
+          continue;
+        }
+
+        try {
+          const file = await this.fs.getFileByRelativePath(booksRoot, scanned.relativePath);
+          const epub = await this.epubService.getEpub(file);
+          const coverBlob = await epub.getCover();
+
+          results[index] = {
+            ...scanned,
+            epubMetadata: epub.metadata ?? null,
+            coverBlob: coverBlob ?? null,
+          };
+        } catch {
+          results[index] = {
+            ...scanned,
+            epubMetadata: null,
+            coverBlob: null,
+          };
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(concurrency, results.length) }, worker));
+    return results;
   }
 }
