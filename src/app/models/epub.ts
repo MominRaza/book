@@ -1,3 +1,12 @@
+export type EPUBType = {
+  metadata: Metadata;
+  toc: TOC[];
+  getCover: () => Promise<Blob | undefined>;
+  sections: { resolveHref: (href: string) => string }[];
+  resolveHref: (href: string) => { index: number; anchor: string | null };
+  isExternal: (href: string) => boolean;
+};
+
 export type Metadata = {
   identifier: string;
   title: string;

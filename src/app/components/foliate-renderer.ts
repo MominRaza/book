@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, input, OnDestroy, OnInit, signal } from "@angular/core";
 import { FileService } from "../services/file";
-import { Metadata, TOC } from "../models/epub";
+import { EPUBType, Metadata, TOC } from "../models/epub";
 import { Sidebar } from "./sidebar";
 
 type FoliateElement = HTMLElement & {
@@ -10,15 +10,6 @@ type FoliateElement = HTMLElement & {
   next: () => void;
   setStyles: (styles: string) => void;
   destroy: () => void;
-};
-
-type EPUBType = {
-  metadata: Metadata;
-  toc: TOC[];
-  getCover: () => Promise<Blob | undefined>;
-  sections: { resolveHref: (href: string) => string }[];
-  resolveHref: (href: string) => { index: number; anchor: string | null };
-  isExternal: (href: string) => boolean;
 };
 
 @Component({
@@ -62,8 +53,7 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    const { EPUB } = await import("foliate-js/epub.js");
-    this.epub = (await new EPUB(await this.zipLoader()).init()) as EPUBType;
+    this.epub = await this.file.getEpub(this.path());
     this.metadata.set(this.epub.metadata);
     this.toc.set(this.epub.toc);
     console.log(this.epub.toc);
@@ -97,31 +87,6 @@ export class FoliateRenderer implements OnInit, OnDestroy {
     this.foliate.next();
     this.elementRef.nativeElement.appendChild(this.foliate);
     this.elementRef.nativeElement.focus();
-  }
-
-  private async zipLoader() {
-    const file = await this.file.getFile(this.path());
-    const zip = await import("foliate-js/vendor/zip.js");
-    zip.configure({ useWebWorkers: false });
-    const entries = await new zip.ZipReader(new zip.BlobReader(file)).getEntries();
-    const byName = new Map(entries.map((e) => [e.filename, e]));
-    const getEntry = (filename: string) => byName.get(filename);
-
-    const loadText = async (filename: string) => {
-      const entry = getEntry(filename) as unknown as {
-        getData: (writer: unknown) => Promise<string>;
-      };
-      return entry?.getData(new zip.TextWriter());
-    };
-    const loadBlob = async (filename: string) => {
-      const entry = getEntry(filename) as unknown as {
-        getData: (writer: unknown) => Promise<Blob>;
-      };
-      return entry?.getData(new zip.BlobWriter());
-    };
-    const getSize = async (filename: string) => getEntry(filename)?.uncompressedSize;
-
-    return { loadText, loadBlob, getSize };
   }
 
   onKeydown(event: KeyboardEvent): void {
