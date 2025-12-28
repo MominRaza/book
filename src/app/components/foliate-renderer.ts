@@ -9,6 +9,12 @@ type FoliateElement = HTMLElement & {
   destroy: () => void;
 };
 
+type EPUBType = {
+  resolveHref: (href: string) => { index: number; anchor: string | null };
+  isExternal: (href: string) => boolean;
+  sections: { resolveHref: (href: string) => string }[];
+};
+
 @Component({
   selector: "foliate-renderer",
   template: ``,
@@ -23,23 +29,27 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   file = inject(FileService);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
   private foliate?: FoliateElement;
+  private epub?: EPUBType;
   private readonly attachedDocs = new Set<Document>();
 
   async ngOnInit(): Promise<void> {
     const { EPUB } = await import("foliate-js/epub.js");
-    const epub = await new EPUB(await this.zipLoader()).init();
+    this.epub = (await new EPUB(await this.zipLoader()).init()) as EPUBType;
 
     await import("foliate-js/paginator.js");
     this.foliate = document.createElement("foliate-paginator") as FoliateElement;
 
-    this.foliate.addEventListener("load", (event: Event) => {
-      const doc = (event as CustomEvent<{ doc?: Document }>).detail?.doc;
+    this.foliate.addEventListener("load", (event) => {
+      const detail = (event as CustomEvent<{ doc: Document; index: number }>).detail;
+      const doc = detail.doc;
+      const index = detail.index;
       if (!doc || this.attachedDocs.has(doc)) return;
       this.attachedDocs.add(doc);
       doc.addEventListener("keydown", this.onKeydown.bind(this));
+      doc.addEventListener("click", this.onClick.bind(this, index));
     });
 
-    this.foliate.open(epub);
+    this.foliate.open(this.epub);
     this.foliate.goTo({ index: this.index() });
     this.elementRef.nativeElement.appendChild(this.foliate);
     this.elementRef.nativeElement.focus();
@@ -89,6 +99,21 @@ export class FoliateRenderer implements OnInit, OnDestroy {
 
   goToNext(): void {
     this.foliate?.next();
+  }
+
+  private onClick(index: number, event: MouseEvent): void {
+    const a = (event.target as HTMLElement).closest("a[href]");
+    if (!a) return;
+    event.preventDefault();
+    let href = a.getAttribute("href");
+    if (href === null) return;
+    if (this.epub?.isExternal?.(href)) {
+      globalThis.open(href, "_blank");
+      return;
+    }
+    href = this.epub?.sections[index].resolveHref(href) ?? href;
+    const resolved = this.epub?.resolveHref(href);
+    if (resolved) this.foliate?.goTo(resolved);
   }
 
   ngOnDestroy(): void {
