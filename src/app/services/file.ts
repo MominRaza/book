@@ -16,8 +16,7 @@ export class FileService {
     return this.fs.getFileByRelativePath(root, path);
   }
 
-  async getEpub(path: string): Promise<EPUBType> {
-    const file = await this.getFile(path);
+  async getEpub(file: File): Promise<EPUBType> {
     const zip = await import("foliate-js/vendor/zip.js");
     zip.configure({ useWebWorkers: false });
     const entries = await new zip.ZipReader(new zip.BlobReader(file)).getEntries();

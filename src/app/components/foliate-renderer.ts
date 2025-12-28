@@ -53,7 +53,8 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    this.epub = await this.file.getEpub(this.path());
+    const file = await this.file.getFile(this.path());
+    this.epub = await this.file.getEpub(file);
     this.metadata.set(this.epub.metadata);
     this.toc.set(this.epub.toc);
     console.log(this.epub.toc);
