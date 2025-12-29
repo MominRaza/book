@@ -1,10 +1,10 @@
-import { JsonPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { JsonPipe } from "@angular/common";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
-import { ScannedFile } from '../models/library';
+import { ScannedFile } from "../models/library";
 
 @Component({
-  selector: 'app-file-debug',
+  selector: "app-file-debug",
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [JsonPipe],
   styles: [

@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { Router, RouterLink } from "@angular/router";
 
-import { LibraryStoreService } from '../services/library-store';
-import { AudiobooksSection } from '../components/audiobooks-section';
-import { BooksSection } from '../components/books-section';
+import { LibraryStoreService } from "../services/library-store";
+import { AudiobooksSection } from "../components/audiobooks-section";
+import { BooksSection } from "../components/books-section";
 
 @Component({
-  selector: 'app-library',
+  selector: "app-library",
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, BooksSection, AudiobooksSection],
   template: `
@@ -34,6 +34,6 @@ export class Library {
   private readonly router = inject(Router);
 
   protected async goSetup(): Promise<void> {
-    await this.router.navigateByUrl('/setup');
+    await this.router.navigateByUrl("/setup");
   }
 }

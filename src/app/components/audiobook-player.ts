@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 
-import { LibraryStoreService } from '../services/library-store';
+import { LibraryStoreService } from "../services/library-store";
 
 @Component({
-  selector: 'app-audiobook-player',
+  selector: "app-audiobook-player",
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.player-dock]': 'true',
-    '[class.hidden]': '!store.audioObjectUrl()',
+    "[class.player-dock]": "true",
+    "[class.hidden]": "!store.audioObjectUrl()",
   },
   styles: [
     `:host(.player-dock){

@@ -1,8 +1,13 @@
-import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
-import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
+import {
+  ApplicationConfig,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+  inject,
+} from "@angular/core";
+import { provideRouter, withEnabledBlockingInitialNavigation } from "@angular/router";
 
-import { routes } from './app.routes';
-import { LibraryStoreService } from './services/library-store';
+import { routes } from "./app.routes";
+import { LibraryStoreService } from "./services/library-store";
 
 export const appConfig: ApplicationConfig = {
   providers: [

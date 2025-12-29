@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/core";
+import { Router } from "@angular/router";
 
-import { LibraryStoreService } from '../services/library-store';
+import { LibraryStoreService } from "../services/library-store";
 
 @Component({
-  selector: 'app-setup',
+  selector: "app-setup",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main>
@@ -77,7 +77,7 @@ export class Setup {
 
     if (this.store.errorMessage()) return;
 
-    await this.router.navigateByUrl('/library');
+    await this.router.navigateByUrl("/library");
   }
 
   protected async reset(): Promise<void> {

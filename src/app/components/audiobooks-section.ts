@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 
-import { LibraryStoreService } from '../services/library-store';
-import { AudiobookPlayer } from './audiobook-player';
-import { FileDebug } from './file-debug';
+import { LibraryStoreService } from "../services/library-store";
+import { AudiobookPlayer } from "./audiobook-player";
+import { FileDebug } from "./file-debug";
 
 @Component({
-  selector: 'app-audiobooks-section',
+  selector: "app-audiobooks-section",
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AudiobookPlayer, FileDebug],
   styles: [

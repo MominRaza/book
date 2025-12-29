@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from "@angular/core";
+import { Router, RouterLink } from "@angular/router";
 
-import { LibraryStoreService } from '../services/library-store';
+import { LibraryStoreService } from "../services/library-store";
 
 @Component({
-  selector: 'app-startup',
+  selector: "app-startup",
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
@@ -32,10 +32,10 @@ export class Startup implements OnInit {
     await this.store.initializeFromCache();
 
     if (this.store.isConfigured()) {
-      await this.router.navigateByUrl('/library');
+      await this.router.navigateByUrl("/library");
       return;
     }
 
-    await this.router.navigateByUrl('/setup');
+    await this.router.navigateByUrl("/setup");
   }
 }
