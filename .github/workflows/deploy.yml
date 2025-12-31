@@ -31,7 +31,7 @@ jobs:
       - name: Run linter
         run: bun run lint
       - name: Build static content
-        run: bun run build
+        run: bun run build --base-href "/book/"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
