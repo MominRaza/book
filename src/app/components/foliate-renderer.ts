@@ -1,5 +1,4 @@
 import { Component, ElementRef, inject, input, OnDestroy, OnInit, signal } from "@angular/core";
-import { FileService } from "../services/file";
 import { EPUBType, Metadata, TOC } from "../models/epub";
 import { Sidebar } from "./sidebar";
 import { EpubService } from "../services/epub";
@@ -42,8 +41,7 @@ type FoliateElement = HTMLElement & {
   },
 })
 export class FoliateRenderer implements OnInit, OnDestroy {
-  path = input.required<string>();
-  fileService = inject(FileService);
+  file = input.required<File>();
   epubService = inject(EpubService);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
   private foliate?: FoliateElement;
@@ -55,8 +53,7 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    const file = await this.fileService.getFile(this.path());
-    this.epub = await this.epubService.getEpub(file);
+    this.epub = await this.epubService.getEpub(this.file());
     this.metadata.set(this.epub.metadata);
     this.toc.set(this.epub.toc);
     console.log(this.epub.toc);
