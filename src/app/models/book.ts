@@ -1,6 +1,7 @@
 export interface Book {
-  id: number;
+  identifier: string;
   title: string;
-  author: string;
-  publishedDate: Date;
+  author?: string;
+  publishedDate?: string;
+  coverImage?: Blob;
 }

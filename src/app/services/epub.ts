@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 
 import { EPUBType } from "../models/epub";
+import { Book } from "../models/book";
 
 @Injectable({ providedIn: "root" })
 export class EpubService {
@@ -27,5 +28,17 @@ export class EpubService {
 
     const { EPUB } = await import("foliate-js/epub.js");
     return new EPUB({ loadText, loadBlob, getSize }).init() as Promise<EPUBType>;
+  }
+
+  async getBook(fileHandle: FileSystemFileHandle): Promise<Book> {
+    const file = await fileHandle.getFile();
+    const epub = await this.getEpub(file);
+    return {
+      identifier: epub.metadata.identifier || crypto.randomUUID(),
+      title: epub.metadata.title || file.name,
+      author: epub.metadata.author?.name,
+      publishedDate: epub.metadata.published,
+      coverImage: await epub.getCover(),
+    };
   }
 }

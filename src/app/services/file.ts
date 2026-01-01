@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 
-type FileSystemDirectoryHandleWithPermissions = FileSystemDirectoryHandle & {
+export type FileSystemDirectoryHandleWithPermissions = FileSystemDirectoryHandle & {
   queryPermission: () => Promise<"granted" | "denied">;
   requestPermission: () => Promise<"granted" | "denied">;
 };
@@ -17,12 +17,12 @@ export class FileService {
     ).showDirectoryPicker();
   }
 
-  async verifyPermission(fileHandle: FileSystemDirectoryHandleWithPermissions) {
+  async verifyPermission(fileHandle: FileSystemDirectoryHandleWithPermissions, request = true) {
     if ((await fileHandle.queryPermission()) === "granted") {
       return true;
     }
 
-    if ((await fileHandle.requestPermission()) === "granted") {
+    if (request && (await fileHandle.requestPermission()) === "granted") {
       return true;
     }
 
