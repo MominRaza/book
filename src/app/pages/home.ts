@@ -4,8 +4,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { FileService } from "../services/file";
 import { Router } from "@angular/router";
 import { IDBService } from "../services/idb";
-import { EpubService } from "../services/epub";
-import { Book } from "../models/book";
+import { BooksService } from "../services/books";
 
 @Component({
   selector: "app-home",
@@ -40,7 +39,7 @@ export class HomePage implements OnInit {
   private readonly fileService = inject(FileService);
   private readonly router = inject(Router);
   private readonly idbService = inject(IDBService);
-  private readonly epubService = inject(EpubService);
+  private readonly booksService = inject(BooksService);
 
   async ngOnInit() {
     const directoryHandle = await this.idbService.getDirectoryHandle("books");
@@ -50,17 +49,10 @@ export class HomePage implements OnInit {
   async selectBooksDirectory() {
     const directoryHandle = await this.fileService.directoryPicker();
     if (directoryHandle === null) return;
-    const hasPermission = await this.fileService.verifyPermission(directoryHandle);
-    if (hasPermission) {
-      const epubFiles = await this.fileService.readFiles(directoryHandle, ".epub");
-      const books: Book[] = await Promise.all(
-        epubFiles.map(async (fileHandle) => await this.epubService.getBook(fileHandle)),
-      );
-      if (epubFiles.length > 0) {
-        await this.idbService.addBooks(books);
-        await this.idbService.setDirectoryHandle("books", directoryHandle);
-        this.router.navigate(["/library"], { replaceUrl: true });
-      }
-    }
+
+    await this.booksService.saveBooks(directoryHandle);
+
+    await this.idbService.setDirectoryHandle("books", directoryHandle);
+    this.router.navigate(["/library"], { replaceUrl: true });
   }
 }

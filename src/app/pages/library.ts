@@ -7,15 +7,14 @@ import { MatToolbarModule } from "@angular/material/toolbar";
 import { Book } from "../models/book";
 import { BlobImage } from "../directives/blob-image";
 import { AuthorName } from "../pipes/auther-name";
+import { MatIconModule } from "@angular/material/icon";
+import { BooksService } from "../services/books";
 
 @Component({
   selector: "app-library",
-  imports: [MatButtonModule, MatToolbarModule, BlobImage, AuthorName],
+  imports: [MatButtonModule, MatToolbarModule, MatIconModule, BlobImage, AuthorName],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-toolbar>
-      <span>Your Library</span>
-    </mat-toolbar>
     @if (!hasPermission()) {
       <div class="no-permission">
         <p class="mat-font-body-lg">
@@ -24,9 +23,16 @@ import { AuthorName } from "../pipes/auther-name";
         <button matButton="filled" (click)="requestPermission()">Request Permission</button>
       </div>
     } @else {
-      <div>
+      <mat-toolbar>
+        <span>Your Library</span>
+        <div class="spacer"></div>
+        <button matIconButton>
+          <mat-icon aria-label="Refresh Library" (click)="refesh()">refresh</mat-icon>
+        </button>
+      </mat-toolbar>
+      <div class="books">
         @for (book of books(); track book.identifier) {
-          <div>
+          <div class="book">
             <img blobImg [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
             <h2>{{ book.title }}</h2>
             <p>{{ book.author | authorName }}</p>
@@ -38,6 +44,17 @@ import { AuthorName } from "../pipes/auther-name";
     }
   `,
   styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
     .no-permission {
       display: flex;
       flex-direction: column;
@@ -47,15 +64,40 @@ import { AuthorName } from "../pipes/auther-name";
       gap: 16px;
       text-align: center;
     }
+
+    .books {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .book {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .book img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
   `,
 })
 export class LibraryPage implements OnInit {
   private readonly idbService = inject(IDBService);
   private readonly fileService = inject(FileService);
   private readonly router = inject(Router);
+  private readonly booksService = inject(BooksService);
   protected hasPermission = signal(false);
   protected directoryHandle = signal<FileSystemDirectoryHandleWithPermissions | null>(null);
-  protected epubFiles = signal<FileSystemFileHandle[]>([]);
   protected books = signal<Book[]>([]);
 
   async ngOnInit() {
@@ -81,7 +123,13 @@ export class LibraryPage implements OnInit {
   private async loadBooks() {
     const directoryHandle = this.directoryHandle();
     if (!directoryHandle) return;
-    this.epubFiles.set(await this.fileService.readFiles(directoryHandle, ".epub"));
     this.books.set(await this.idbService.getAllBooks());
+  }
+
+  protected async refesh() {
+    const directoryHandle = this.directoryHandle();
+    if (!directoryHandle) return;
+    await this.booksService.saveBooks(directoryHandle);
+    this.loadBooks();
   }
 }
