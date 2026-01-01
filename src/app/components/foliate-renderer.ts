@@ -99,6 +99,8 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   }
 
   onKeydown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+
     switch (event.key) {
       case "ArrowLeft":
         event.preventDefault();
