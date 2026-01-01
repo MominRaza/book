@@ -20,6 +20,7 @@
     "@angular/material": "21.0.5",
     "@angular/platform-browser": "^21.0.6",
     "@angular/router": "^21.0.6",
+    "@angular/service-worker": "^21.0.6",
     "foliate-js": "github:johnfactotum/foliate-js",
     "idb": "^8.0.3",
     "rxjs": "~7.8.2",
