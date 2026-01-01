@@ -2,6 +2,9 @@ import { Component, ElementRef, inject, input, OnDestroy, OnInit, signal } from 
 import { EPUBType, Metadata, TOC } from "../models/epub";
 import { Sidebar } from "./sidebar";
 import { EpubService } from "../services/epub";
+import { IDBService } from "../services/idb";
+import { MatIcon } from "@angular/material/icon";
+import { MatButtonModule } from "@angular/material/button";
 
 type FoliateElement = HTMLElement & {
   open: (book: unknown) => void;
@@ -14,9 +17,11 @@ type FoliateElement = HTMLElement & {
 
 @Component({
   selector: "foliate-renderer",
-  imports: [Sidebar],
+  imports: [Sidebar, MatIcon, MatButtonModule],
   template: `
-    <button [class.show]="showSidebar()" (click)="showSidebar.set(!showSidebar())">Toggle Sidebar</button>
+    <button matIconButton [class.show]="showSidebar()" (click)="showSidebar.set(!showSidebar())">
+      <mat-icon>menu</mat-icon>
+    </button>
     <app-sidebar [metadata]="metadata()" [coverUrl]="coverUrl()" [toc]="toc()" [show]="showSidebar()" (goTo)="showSidebar.set(!showSidebar()); goTo($event)" />
   `,
   styles: `
@@ -41,9 +46,10 @@ type FoliateElement = HTMLElement & {
   },
 })
 export class FoliateRenderer implements OnInit, OnDestroy {
-  file = input.required<File>();
+  bookId = input.required<string>();
   epubService = inject(EpubService);
   private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
+  private readonly idbService = inject(IDBService);
   private foliate?: FoliateElement;
   private epub?: EPUBType;
   private readonly attachedDocs = new Set<Document>();
@@ -53,7 +59,10 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    this.epub = await this.epubService.getEpub(this.file());
+    const book = await this.idbService.getBook(this.bookId());
+    if (!book) return;
+    const file = await book.handle.getFile();
+    this.epub = await this.epubService.getEpub(file);
     this.metadata.set(this.epub.metadata);
     this.toc.set(this.epub.toc);
     console.log(this.epub.toc);

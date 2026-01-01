@@ -2,17 +2,26 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@ang
 import { IDBService } from "../services/idb";
 import { FileService, FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { MatButtonModule } from "@angular/material/button";
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { Book } from "../models/book";
 import { BlobImage } from "../directives/blob-image";
 import { AuthorName } from "../pipes/auther-name";
 import { MatIconModule } from "@angular/material/icon";
 import { BooksService } from "../services/books";
+import { MatRippleModule } from "@angular/material/core";
 
 @Component({
   selector: "app-library",
-  imports: [MatButtonModule, MatToolbarModule, MatIconModule, BlobImage, AuthorName],
+  imports: [
+    MatButtonModule,
+    MatToolbarModule,
+    MatIconModule,
+    BlobImage,
+    AuthorName,
+    MatRippleModule,
+    RouterLink,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!hasPermission()) {
@@ -32,7 +41,7 @@ import { BooksService } from "../services/books";
       </mat-toolbar>
       <div class="books">
         @for (book of books(); track book.identifier) {
-          <div class="book">
+          <div matRipple class="book" [routerLink]="['/reader', book.identifier]">
             <img blobImg [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
             <h2>{{ book.title }}</h2>
             <p>{{ book.author | authorName }}</p>

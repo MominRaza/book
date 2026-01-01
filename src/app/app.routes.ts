@@ -9,4 +9,8 @@ export const routes: Routes = [
     path: "library",
     loadComponent: () => import("./pages/library").then((m) => m.LibraryPage),
   },
+  {
+    path: "reader/:bookId",
+    loadComponent: () => import("./pages/reader").then((m) => m.ReaderPage),
+  },
 ];

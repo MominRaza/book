@@ -37,8 +37,8 @@ export class EpubService {
       identifier: epub.metadata.identifier || crypto.randomUUID(),
       title: epub.metadata.title || file.name,
       author: epub.metadata.author?.name,
-      publishedDate: epub.metadata.published,
       coverImage: await epub.getCover(),
+      handle: fileHandle,
     };
   }
 }
