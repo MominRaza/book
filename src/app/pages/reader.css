@@ -1,0 +1,38 @@
+mat-drawer-container {
+    position: absolute;
+    inset: 0;
+}
+
+.cover-metadata {
+    display: flex;
+    gap: 0.75rem;
+    margin: 0.75rem;
+
+    img {
+        width: 5rem;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .metadata {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.5rem;
+
+        h1 {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+mat-toolbar {
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+}
+
+.foliate-container {
+    height: 100%;
+    outline: none;
+}

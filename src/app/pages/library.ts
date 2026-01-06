@@ -34,14 +34,14 @@ import { MatRippleModule } from "@angular/material/core";
     } @else {
       <mat-toolbar>
         <span>Your Library</span>
-        <div class="spacer"></div>
+        <div [style.flex]="1"></div>
         <button matIconButton>
           <mat-icon aria-label="Refresh Library" (click)="refesh()">refresh</mat-icon>
         </button>
       </mat-toolbar>
       <div class="books">
         @for (book of books(); track book.identifier) {
-          <div matRipple class="book" [routerLink]="['/reader', book.identifier]">
+          <div matRipple class="book" [routerLink]="book.identifier">
             <img blobImg [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
             <h2>{{ book.title }}</h2>
             <p>{{ book.author | authorName }}</p>
@@ -58,10 +58,6 @@ import { MatRippleModule } from "@angular/material/core";
       flex-direction: column;
       height: 100%;
       overflow: hidden;
-    }
-
-    .spacer {
-      flex: 1;
     }
 
     .no-permission {

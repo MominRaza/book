@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  signal,
-  viewChild,
-} from "@angular/core";
+import { Component, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from "@angular/core";
 import { EPUBType, Metadata, TOC } from "../models/epub";
 import { EpubService } from "../services/epub";
 import { IDBService } from "../services/idb";
@@ -33,6 +24,13 @@ type FoliateElement = HTMLElement & {
   template: `
     <mat-drawer-container>
       <mat-drawer #drawer>
+        <div class="cover-metadata">
+          <img [src]="coverUrl()" />
+          <div class="metadata">
+            <h1>{{ metadata()?.title }}</h1>
+            <p>{{ metadata()?.author?.name }}</p>
+          </div>
+        </div>
         <mat-nav-list>
           @for (item of toc(); track $index) {
             <a mat-list-item (click)="goTo(item.href); drawer.close()">
@@ -55,20 +53,19 @@ type FoliateElement = HTMLElement & {
           <button matIconButton (click)="drawer.toggle()">
             <mat-icon>menu</mat-icon>
           </button>
+          <div [style.flex]="1"></div>
+          <button matIconButton>
+            <mat-icon>settings</mat-icon>
+          </button>
+          <button matIconButton (click)="goBack()">
+            <mat-icon>close</mat-icon>
+          </button>
         </mat-toolbar>
-        <div tabindex="0" (keydown)="onKeydown($event)" #foliateContainer></div>
+        <div tabindex="0" (keydown)="onKeydown($event)" class="foliate-container" #foliateContainer></div>
       </mat-drawer-content>
     </mat-drawer-container>
   `,
-  styles: `
-    mat-drawer-container {
-      position: absolute;
-      inset: 0;
-    }
-    div {
-      height: 100%;
-    }
-  `,
+  styleUrl: "./reader.css",
 })
 export class ReaderPage implements OnInit, OnDestroy {
   private readonly activatedRoute = inject(ActivatedRoute);
@@ -87,11 +84,14 @@ export class ReaderPage implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     const bookId = this.activatedRoute.snapshot.paramMap.get("bookId");
     if (!bookId) {
-      this.router.navigate(["/library"], { replaceUrl: true });
+      this.goBack();
       return;
     }
     const book = await this.idbService.getBook(bookId);
-    if (!book) return;
+    if (!book) {
+      this.goBack();
+      return;
+    }
     const file = await book.handle.getFile();
     this.epub = await this.epubService.getEpub(file);
     this.metadata.set(this.epub.metadata);
@@ -126,6 +126,10 @@ export class ReaderPage implements OnInit, OnDestroy {
     this.foliate.next();
     this.elementRef().nativeElement.appendChild(this.foliate);
     this.elementRef().nativeElement.focus();
+  }
+
+  goBack(): void {
+    this.router.navigate(["/library"], { replaceUrl: true });
   }
 
   onKeydown(event: KeyboardEvent): void {

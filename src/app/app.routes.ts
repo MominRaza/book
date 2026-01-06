@@ -10,7 +10,7 @@ export const routes: Routes = [
     loadComponent: () => import("./pages/library").then((m) => m.LibraryPage),
   },
   {
-    path: "reader/:bookId",
+    path: "library/:bookId",
     loadComponent: () => import("./pages/reader").then((m) => m.ReaderPage),
   },
 ];
