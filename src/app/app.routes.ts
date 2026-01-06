@@ -11,6 +11,6 @@ export const routes: Routes = [
   },
   {
     path: "reader/:bookId",
-    loadComponent: () => import("./pages/reader").then((m) => m.ReaderPage),
+    loadComponent: () => import("./components/foliate-renderer").then((m) => m.ReaderPage),
   },
 ];

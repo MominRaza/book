@@ -1,10 +1,22 @@
-import { Component, ElementRef, inject, input, OnDestroy, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  signal,
+  viewChild,
+} from "@angular/core";
 import { EPUBType, Metadata, TOC } from "../models/epub";
-import { Sidebar } from "./sidebar";
 import { EpubService } from "../services/epub";
 import { IDBService } from "../services/idb";
-import { MatIcon } from "@angular/material/icon";
+import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatListModule } from "@angular/material/list";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { ActivatedRoute, Router } from "@angular/router";
 
 type FoliateElement = HTMLElement & {
   open: (book: unknown) => void;
@@ -16,39 +28,53 @@ type FoliateElement = HTMLElement & {
 };
 
 @Component({
-  selector: "foliate-renderer",
-  imports: [Sidebar, MatIcon, MatButtonModule],
+  selector: "app-reader",
+  imports: [MatSidenavModule, MatButtonModule, MatIconModule, MatListModule, MatToolbarModule],
   template: `
-    <button matIconButton [class.show]="showSidebar()" (click)="showSidebar.set(!showSidebar())">
-      <mat-icon>menu</mat-icon>
-    </button>
-    <app-sidebar [metadata]="metadata()" [coverUrl]="coverUrl()" [toc]="toc()" [show]="showSidebar()" (goTo)="showSidebar.set(!showSidebar()); goTo($event)" />
+    <mat-drawer-container>
+      <mat-drawer #drawer>
+        <mat-nav-list>
+          @for (item of toc(); track $index) {
+            <a mat-list-item (click)="goTo(item.href); drawer.close()">
+              {{ item.label }}
+            </a>
+            @if (item.subitems) {
+              <mat-nav-list>
+              @for (subitem of item.subitems; track $index) {
+                <a mat-list-item class="subitem" (click)="goTo(subitem.href); drawer.close()">
+                  {{ subitem.label }}
+                </a>
+              }
+              </mat-nav-list>
+            }
+          }
+        </mat-nav-list>
+      </mat-drawer>
+      <mat-drawer-content>
+        <mat-toolbar>
+          <button matIconButton (click)="drawer.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+        </mat-toolbar>
+        <div tabindex="0" (keydown)="onKeydown($event)" #foliateContainer></div>
+      </mat-drawer-content>
+    </mat-drawer-container>
   `,
   styles: `
-    :host {
-      outline: none;
-    }
-    button {
+    mat-drawer-container {
       position: absolute;
-      top: 1rem;
-      left: 1rem;
-      z-index: 1;
-      transition: left 0.3s ease-in-out;
-
-      &.show {
-        left: calc(10px + var(--sidebar-width));
-      }
+      inset: 0;
+    }
+    div {
+      height: 100%;
     }
   `,
-  host: {
-    tabindex: "0",
-    "(keydown)": "onKeydown($event)",
-  },
 })
-export class FoliateRenderer implements OnInit, OnDestroy {
-  bookId = input.required<string>();
+export class ReaderPage implements OnInit, OnDestroy {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   epubService = inject(EpubService);
-  private readonly elementRef = inject(ElementRef) as ElementRef<HTMLElement>;
+  private readonly elementRef = viewChild.required<ElementRef<HTMLElement>>("foliateContainer");
   private readonly idbService = inject(IDBService);
   private foliate?: FoliateElement;
   private epub?: EPUBType;
@@ -59,13 +85,17 @@ export class FoliateRenderer implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    const book = await this.idbService.getBook(this.bookId());
+    const bookId = this.activatedRoute.snapshot.paramMap.get("bookId");
+    if (!bookId) {
+      this.router.navigate(["/library"], { replaceUrl: true });
+      return;
+    }
+    const book = await this.idbService.getBook(bookId);
     if (!book) return;
     const file = await book.handle.getFile();
     this.epub = await this.epubService.getEpub(file);
     this.metadata.set(this.epub.metadata);
     this.toc.set(this.epub.toc);
-    console.log(this.epub.toc);
     const coverBlob = await this.epub.getCover();
     if (coverBlob) this.coverUrl.set(URL.createObjectURL(coverBlob));
 
@@ -94,8 +124,8 @@ export class FoliateRenderer implements OnInit, OnDestroy {
       pre { white-space: pre-wrap !important }
     `);
     this.foliate.next();
-    this.elementRef.nativeElement.appendChild(this.foliate);
-    this.elementRef.nativeElement.focus();
+    this.elementRef().nativeElement.appendChild(this.foliate);
+    this.elementRef().nativeElement.focus();
   }
 
   onKeydown(event: KeyboardEvent): void {
@@ -146,6 +176,6 @@ export class FoliateRenderer implements OnInit, OnDestroy {
     }
     this.attachedDocs.clear();
     this.foliate?.destroy();
-    this.elementRef.nativeElement.innerHTML = "";
+    this.elementRef().nativeElement.innerHTML = "";
   }
 }
