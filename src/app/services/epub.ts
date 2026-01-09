@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 
 import { EPUBType } from "../models/epub";
 import { Book } from "../models/book";
+import { sha256Hex } from "../utils/hash";
 
 @Injectable({ providedIn: "root" })
 export class EpubService {
@@ -34,7 +35,7 @@ export class EpubService {
     const file = await fileHandle.getFile();
     const epub = await this.getEpub(file);
     return {
-      identifier: epub.metadata.identifier || crypto.randomUUID(),
+      identifier: epub.metadata.identifier || (await sha256Hex(`epub:${file.name}`)),
       title: epub.metadata.title || file.name,
       author: epub.metadata.author?.name,
       coverImage: await epub.getCover(),
