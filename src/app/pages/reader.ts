@@ -1,17 +1,25 @@
-import { Component, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from "@angular/core";
-import { EPUBType, Metadata, TOC } from "../models/epub";
-import { EpubService } from "../services/epub";
-import { IDBService } from "../services/idb";
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  signal,
+  viewChild,
+} from "@angular/core";
+import { EPUBType } from "../models/epub";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { MatToolbarModule } from "@angular/material/toolbar";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Location } from "@angular/common";
 import { MatExpansionModule } from "@angular/material/expansion";
 
 type FoliateElement = HTMLElement & {
-  open: (book: unknown) => void;
+  open: (book: EPUBType) => void;
   goTo: (target: { index: number }) => void;
   prev: () => void;
   next: () => void;
@@ -35,8 +43,8 @@ type FoliateElement = HTMLElement & {
         <div class="cover-metadata">
           <img [src]="coverUrl()" />
           <div class="metadata">
-            <h1>{{ metadata()?.title }}</h1>
-            <p>{{ metadata()?.author?.name }}</p>
+            <h1>{{ metadata().title }}</h1>
+            <p>{{ metadata().author.name }}</p>
           </div>
         </div>
         <mat-accordion>
@@ -73,7 +81,7 @@ type FoliateElement = HTMLElement & {
           <button matIconButton>
             <mat-icon>settings</mat-icon>
           </button>
-          <button matIconButton (click)="goBack()">
+          <button matIconButton (click)="location.back()">
             <mat-icon>close</mat-icon>
           </button>
         </mat-toolbar>
@@ -84,35 +92,18 @@ type FoliateElement = HTMLElement & {
   styleUrl: "./reader.css",
 })
 export class ReaderPage implements OnInit, OnDestroy {
-  private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  epubService = inject(EpubService);
+  protected readonly location = inject(Location);
   private readonly elementRef = viewChild.required<ElementRef<HTMLElement>>("foliateContainer");
-  private readonly idbService = inject(IDBService);
   private foliate?: FoliateElement;
-  private epub?: EPUBType;
+  protected readonly epub = input.required<EPUBType>();
   private readonly attachedDocs = new Set<Document>();
-  metadata = signal<Metadata | undefined>(undefined);
+  metadata = computed(() => this.epub().metadata);
   coverUrl = signal<string | undefined>(undefined);
-  toc = signal<TOC[] | undefined>(undefined);
+  toc = computed(() => this.epub().toc);
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
-    const bookId = this.activatedRoute.snapshot.paramMap.get("bookId");
-    if (!bookId) {
-      this.goBack();
-      return;
-    }
-    const book = await this.idbService.getBook(bookId);
-    if (!book) {
-      this.goBack();
-      return;
-    }
-    const file = await book.handle.getFile();
-    this.epub = await this.epubService.getEpub(file);
-    this.metadata.set(this.epub.metadata);
-    this.toc.set(this.epub.toc);
-    const coverBlob = await this.epub.getCover();
+    const coverBlob = await this.epub().getCover();
     if (coverBlob) this.coverUrl.set(URL.createObjectURL(coverBlob));
 
     await import("foliate-js/paginator.js");
@@ -128,7 +119,7 @@ export class ReaderPage implements OnInit, OnDestroy {
       doc.addEventListener("click", this.onClick.bind(this, index));
     });
 
-    this.foliate.open(this.epub);
+    this.foliate.open(this.epub());
     this.foliate.setStyles(`
       :root { color-scheme: light dark }
       @media (prefers-color-scheme: dark) { a:link { color: lightblue } }
@@ -142,10 +133,6 @@ export class ReaderPage implements OnInit, OnDestroy {
     this.foliate.next();
     this.elementRef().nativeElement.appendChild(this.foliate);
     this.elementRef().nativeElement.focus();
-  }
-
-  goBack(): void {
-    this.router.navigate(["/library"], { replaceUrl: true });
   }
 
   onKeydown(event: KeyboardEvent): void {
@@ -177,16 +164,16 @@ export class ReaderPage implements OnInit, OnDestroy {
     event.preventDefault();
     let href = a.getAttribute("href");
     if (href === null) return;
-    if (this.epub?.isExternal?.(href)) {
+    if (this.epub().isExternal(href)) {
       globalThis.open(href, "_blank");
       return;
     }
-    href = this.epub?.sections[index].resolveHref(href) ?? href;
+    href = this.epub().sections[index].resolveHref(href) ?? href;
     this.goTo(href);
   }
 
   goTo(href: string): void {
-    const resolved = this.epub?.resolveHref(href);
+    const resolved = this.epub().resolveHref(href);
     if (resolved) this.foliate?.goTo(resolved);
   }
 

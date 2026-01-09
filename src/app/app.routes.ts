@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+import { epubResolver } from "./resolver/epub";
 
 export const routes: Routes = [
   {
@@ -12,5 +13,9 @@ export const routes: Routes = [
   {
     path: "library/:bookId",
     loadComponent: () => import("./pages/reader").then((m) => m.ReaderPage),
+    resolve: {
+      epub: epubResolver,
+    },
   },
+  { path: "**", redirectTo: "" },
 ];
