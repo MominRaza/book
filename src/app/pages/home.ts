@@ -35,7 +35,7 @@ import { BooksService } from "../services/books";
     }
   `,
 })
-export class HomePage implements OnInit {
+export class Home implements OnInit {
   private readonly fileService = inject(FileService);
   private readonly router = inject(Router);
   private readonly idbService = inject(IDBService);

@@ -60,7 +60,7 @@ import { BookTitle } from "../pipes/book-title";
   `,
   styleUrl: "./library.css",
 })
-export class LibraryPage implements OnInit {
+export class Library implements OnInit {
   private readonly idbService = inject(IDBService);
   private readonly fileService = inject(FileService);
   private readonly router = inject(Router);

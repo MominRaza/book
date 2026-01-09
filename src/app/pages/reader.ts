@@ -95,7 +95,7 @@ type FoliateElement = HTMLElement & {
   `,
   styleUrl: "./reader.css",
 })
-export class ReaderPage implements OnInit, OnDestroy {
+export class Reader implements OnInit, OnDestroy {
   protected readonly location = inject(Location);
   private readonly elementRef = viewChild.required<ElementRef<HTMLElement>>("foliateContainer");
   private foliate?: FoliateElement;
