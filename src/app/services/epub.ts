@@ -35,7 +35,7 @@ export class EpubService {
     const file = await fileHandle.getFile();
     const epub = await this.getEpub(file);
     return {
-      identifier: epub.metadata.identifier || (await sha256Hex(`epub:${file.name}`)),
+      id: epub.metadata.identifier || (await sha256Hex(`epub:${file.name}`)),
       title: epub.metadata.title || file.name,
       author: epub.metadata.author?.name,
       coverImage: await epub.getCover(),

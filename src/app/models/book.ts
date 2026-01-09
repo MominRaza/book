@@ -1,5 +1,5 @@
 export interface Book {
-  identifier: string;
+  id: string;
   title: string;
   author?: string;
   coverImage?: Blob;

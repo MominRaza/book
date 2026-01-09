@@ -29,10 +29,10 @@ interface BookDB extends DBSchema {
 })
 export class IDBService {
   private useDB() {
-    return openDB<BookDB>("book-db", 2, {
+    return openDB<BookDB>("book-db", 1, {
       upgrade(db) {
         if (!db.objectStoreNames.contains("books")) {
-          db.createObjectStore("books", { keyPath: "identifier" });
+          db.createObjectStore("books", { keyPath: "id" });
         }
         if (!db.objectStoreNames.contains("directoryHandles")) {
           db.createObjectStore("directoryHandles", { keyPath: "type" });
@@ -56,9 +56,9 @@ export class IDBService {
     await tx.done;
   }
 
-  async getBook(identifier: string) {
+  async getBook(id: string) {
     const db = await this.useDB();
-    return db.get("books", identifier);
+    return db.get("books", id);
   }
 
   async getAllBooks() {

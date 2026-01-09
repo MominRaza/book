@@ -43,9 +43,9 @@ import { BookTitle } from "../pipes/book-title";
       </mat-toolbar>
       <div class="main-content">
         <div class="books">
-          @for (book of books(); track book.identifier) {
+          @for (book of books(); track book.id) {
             <div>
-              <div matRipple class="book mat-corner-lg" [routerLink]="book.identifier">
+              <div matRipple class="book mat-corner-lg" [routerLink]="book.id">
                 <img blobImg class="mat-corner-md mat-shadow-2" [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
                 <h2 class="mat-font-title-sm">{{ book.title | bookTitle }}</h2>
                 <p class="mat-font-body-sm">{{ book.author | authorName }}</p>
