@@ -1,4 +1,12 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from "@angular/core";
+import {
+  Component,
+  ChangeDetectionStrategy,
+  OnInit,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+} from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -6,67 +14,70 @@ import { MatListModule } from "@angular/material/list";
 import { Router } from "@angular/router";
 import { AudiobooksService } from "../services/audiobooks";
 import { BooksService } from "../services/books";
-import { FileService, FileSystemDirectoryHandleWithPermissions } from "../services/file";
+import { FileService } from "../services/file";
 import { IDBService } from "../services/idb";
+import { Handles } from "../resolver/handles";
 
 @Component({
   selector: "app-home",
   imports: [MatButtonModule, MatIconModule, MatListModule, MatCardModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <mat-icon class="mat-icon-64">menu_book</mat-icon>
-    <h1 class="mat-font-headline-lg">Welcome to Your Library</h1>
-    <p class="mat-font-body-md">Get started by selecting your books and audiobooks directory</p>
+    @if (!loading()) {
+      <mat-icon class="mat-icon-64">menu_book</mat-icon>
+      <h1 class="mat-font-headline-lg">Welcome to Your Library</h1>
+      <p class="mat-font-body-md">Get started by selecting your books and audiobooks directory</p>
 
-    @if (booksDirectoryHandle() || audiobooksDirectoryHandle()) {
-      <mat-card>
-        <mat-list>
-          @if (booksDirectoryHandle()) {
-            <mat-list-item>
-              <mat-icon matListItemIcon>folder</mat-icon>
-              <div matListItemTitle>Books Directory</div>
-              <div matListItemLine>{{ booksDirectoryHandle()?.name }}</div>
-              <div matListItemMeta>
-                <button matIconButton (click)="selectBooksDirectory()">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              </div>
-            </mat-list-item>
-          }
-          @if (audiobooksDirectoryHandle()) {
-            <mat-divider/>
-            <mat-list-item>
-              <mat-icon matListItemIcon>folder</mat-icon>
-              <div matListItemTitle>Audiobooks Directory</div>
-              <div matListItemLine>{{ audiobooksDirectoryHandle()?.name }}</div>
-              <div matListItemMeta>
-                <button matIconButton (click)="selectAudiobooksDirectory()">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              </div>
-            </mat-list-item>
-          }
-        </mat-list>
-      </mat-card>
-    }
+      @if (booksDirectoryHandle() || audiobooksDirectoryHandle()) {
+        <mat-card>
+          <mat-list>
+            @if (booksDirectoryHandle()) {
+              <mat-list-item>
+                <mat-icon matListItemIcon>folder</mat-icon>
+                <div matListItemTitle>Books Directory</div>
+                <div matListItemLine>{{ booksDirectoryHandle()?.name }}</div>
+                <div matListItemMeta>
+                  <button matIconButton (click)="selectBooksDirectory()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
+              </mat-list-item>
+            }
+            @if (audiobooksDirectoryHandle()) {
+              <mat-divider/>
+              <mat-list-item>
+                <mat-icon matListItemIcon>folder</mat-icon>
+                <div matListItemTitle>Audiobooks Directory</div>
+                <div matListItemLine>{{ audiobooksDirectoryHandle()?.name }}</div>
+                <div matListItemMeta>
+                  <button matIconButton (click)="selectAudiobooksDirectory()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
+              </mat-list-item>
+            }
+          </mat-list>
+        </mat-card>
+      }
 
-    @if (!booksDirectoryHandle()) {
-      <button matButton="filled" (click)="selectBooksDirectory()">
-        <mat-icon>folder_open</mat-icon>
-        Select Books Directory
-      </button>
-      <p class="mat-font-body-sm">Choose a folder containing your books EPUB files</p>
-    } @else if (!audiobooksDirectoryHandle()) {
-      <button matButton="filled" (click)="selectAudiobooksDirectory()">
-        <mat-icon>folder_open</mat-icon>
-        Select Audiobooks Directory
-      </button>
-      <p class="mat-font-body-sm">Choose a folder containing your audiobooks subfolders with M4B files</p>
-    } @else {
-      <button matButton="filled" (click)="continue()">
-        <mat-icon>arrow_forward</mat-icon>
-        Continue
-      </button>
+      @if (!booksDirectoryHandle()) {
+        <button matButton="filled" (click)="selectBooksDirectory()">
+          <mat-icon>folder_open</mat-icon>
+          Select Books Directory
+        </button>
+        <p class="mat-font-body-sm">Choose a folder containing your books EPUB files</p>
+      } @else if (!audiobooksDirectoryHandle()) {
+        <button matButton="filled" (click)="selectAudiobooksDirectory()">
+          <mat-icon>folder_open</mat-icon>
+          Select Audiobooks Directory
+        </button>
+        <p class="mat-font-body-sm">Choose a folder containing your audiobooks subfolders with M4B files</p>
+      } @else {
+        <button matButton="filled" (click)="continue()">
+          <mat-icon>arrow_forward</mat-icon>
+          Continue
+        </button>
+      }
     }
   `,
   styles: `
@@ -104,31 +115,28 @@ export class Home implements OnInit {
   private readonly booksService = inject(BooksService);
   private readonly audiobooksService = inject(AudiobooksService);
 
-  protected readonly booksDirectoryHandle = signal<FileSystemDirectoryHandleWithPermissions | null>(
-    null,
+  protected readonly handles = input<Handles>();
+  protected readonly booksDirectoryHandle = linkedSignal(() => this.handles()?.booksHandle);
+  protected readonly audiobooksDirectoryHandle = linkedSignal(
+    () => this.handles()?.audiobooksHandle,
   );
-  protected readonly audiobooksDirectoryHandle =
-    signal<FileSystemDirectoryHandleWithPermissions | null>(null);
+
+  protected readonly loading = signal<boolean>(true);
 
   async ngOnInit() {
-    const directoryHandles = await this.idbService.getAllDirectoryHandles();
+    this.loading.set(await this.checkAndNavigate());
+  }
 
-    const booksHandle = directoryHandles.find((d) => d.type === "books")?.handle ?? null;
-    const audiobooksHandle = directoryHandles.find((d) => d.type === "audiobooks")?.handle ?? null;
-
-    this.booksDirectoryHandle.set(booksHandle ?? null);
-    this.audiobooksDirectoryHandle.set(audiobooksHandle ?? null);
-
-    if (!booksHandle || !audiobooksHandle) return;
-
+  private async checkAndNavigate() {
     const books = await this.idbService.getAllBooks();
-    if (books.length === 0) return;
+    if (books.length === 0) return false;
 
     const audiobooks = await this.idbService.getAllAudiobooks();
-    if (audiobooks.length === 0) return;
+    if (audiobooks.length === 0) return false;
 
     const links = await this.idbService.getAllLinks();
     this.router.navigate([links.length > 0 ? "/library" : "/setup"], { replaceUrl: true });
+    return true;
   }
 
   protected async selectBooksDirectory() {
