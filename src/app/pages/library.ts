@@ -10,6 +10,7 @@ import { AuthorName } from "../pipes/auther-name";
 import { MatIconModule } from "@angular/material/icon";
 import { BooksService } from "../services/books";
 import { MatRippleModule } from "@angular/material/core";
+import { BookTitle } from "../pipes/book-title";
 
 @Component({
   selector: "app-library",
@@ -21,6 +22,7 @@ import { MatRippleModule } from "@angular/material/core";
     AuthorName,
     MatRippleModule,
     RouterLink,
+    BookTitle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -40,61 +42,23 @@ import { MatRippleModule } from "@angular/material/core";
         </button>
       </mat-toolbar>
       <div class="books">
-        @for (book of books(); track book.identifier) {
-          <div matRipple class="book" [routerLink]="book.identifier">
-            <img blobImg [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
-            <h2>{{ book.title }}</h2>
-            <p>{{ book.author | authorName }}</p>
-          </div>
-        } @empty {
-          <p>No books found in this folder.</p>
-        }
+        <div class="grid">
+          @for (book of books(); track book.identifier) {
+            <div>
+              <div matRipple class="book mat-corner-lg" [routerLink]="book.identifier">
+                <img blobImg class="mat-corner-md mat-shadow-2" [src]="book.coverImage" [alt]="'Cover of ' + book.title" />
+                <h2 class="mat-font-title-sm">{{ book.title | bookTitle }}</h2>
+                <p class="mat-font-body-sm">{{ book.author | authorName }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p>No books found in this folder.</p>
+          }
+        </div>
       </div>
     }
   `,
-  styles: `
-    :host {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .no-permission {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 16px;
-      text-align: center;
-    }
-
-    .books {
-      flex: 1;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 16px;
-      padding: 16px;
-    }
-
-    .book {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 8px;
-    }
-
-    .book img {
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-  `,
+  styleUrl: "./library.css",
 })
 export class LibraryPage implements OnInit {
   private readonly idbService = inject(IDBService);

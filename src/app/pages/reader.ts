@@ -8,6 +8,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { ActivatedRoute, Router } from "@angular/router";
+import { MatExpansionModule } from "@angular/material/expansion";
 
 type FoliateElement = HTMLElement & {
   open: (book: unknown) => void;
@@ -20,7 +21,14 @@ type FoliateElement = HTMLElement & {
 
 @Component({
   selector: "app-reader",
-  imports: [MatSidenavModule, MatButtonModule, MatIconModule, MatListModule, MatToolbarModule],
+  imports: [
+    MatSidenavModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule,
+    MatToolbarModule,
+    MatExpansionModule,
+  ],
   template: `
     <mat-drawer-container>
       <mat-drawer #drawer>
@@ -31,22 +39,30 @@ type FoliateElement = HTMLElement & {
             <p>{{ metadata()?.author?.name }}</p>
           </div>
         </div>
-        <mat-nav-list>
-          @for (item of toc(); track $index) {
-            <a mat-list-item (click)="goTo(item.href); drawer.close()">
-              {{ item.label }}
-            </a>
-            @if (item.subitems) {
-              <mat-nav-list>
-              @for (subitem of item.subitems; track $index) {
-                <a mat-list-item class="subitem" (click)="goTo(subitem.href); drawer.close()">
-                  {{ subitem.label }}
-                </a>
+        <mat-accordion>
+          <mat-nav-list>
+            @for (item of toc(); track $index) {
+              @if (item.subitems) {
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      <a mat-list-item (click)="goTo(item.href); drawer.close()">{{ item.label }}</a>
+                    </mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <mat-nav-list>
+                    @for (subitem of item.subitems; track $index) {
+                      <a mat-list-item class="subitem" (click)="goTo(subitem.href); drawer.close()">
+                        {{ subitem.label }}
+                      </a>
+                    }
+                  </mat-nav-list>
+                </mat-expansion-panel>
+              } @else {
+                <a mat-list-item (click)="goTo(item.href); drawer.close()">{{ item.label }}</a>
               }
-              </mat-nav-list>
             }
-          }
-        </mat-nav-list>
+          </mat-nav-list>
+        </mat-accordion>
       </mat-drawer>
       <mat-drawer-content>
         <mat-toolbar>
