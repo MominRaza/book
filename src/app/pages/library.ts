@@ -41,8 +41,8 @@ import { BookTitle } from "../pipes/book-title";
           <mat-icon aria-label="Refresh Library" (click)="refesh()">refresh</mat-icon>
         </button>
       </mat-toolbar>
-      <div class="books">
-        <div class="grid">
+      <div class="main-content">
+        <div class="books">
           @for (book of books(); track book.identifier) {
             <div>
               <div matRipple class="book mat-corner-lg" [routerLink]="book.identifier">
@@ -59,6 +59,7 @@ import { BookTitle } from "../pipes/book-title";
     }
   `,
   styleUrl: "./library.css",
+  host: { class: "main" },
 })
 export class Library implements OnInit {
   private readonly idbService = inject(IDBService);
