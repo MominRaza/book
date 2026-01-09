@@ -16,7 +16,7 @@ import { AudiobooksService } from "../services/audiobooks";
 import { BooksService } from "../services/books";
 import { FileService } from "../services/file";
 import { IDBService } from "../services/idb";
-import { Handles } from "../resolver/handles";
+import { DirectoryHandles } from "../resolver/handles";
 
 @Component({
   selector: "app-home",
@@ -115,10 +115,12 @@ export class Home implements OnInit {
   private readonly booksService = inject(BooksService);
   private readonly audiobooksService = inject(AudiobooksService);
 
-  protected readonly handles = input<Handles>();
-  protected readonly booksDirectoryHandle = linkedSignal(() => this.handles()?.booksHandle);
+  protected readonly directoryHandles = input<DirectoryHandles>();
+  protected readonly booksDirectoryHandle = linkedSignal(
+    () => this.directoryHandles()?.booksHandle,
+  );
   protected readonly audiobooksDirectoryHandle = linkedSignal(
-    () => this.handles()?.audiobooksHandle,
+    () => this.directoryHandles()?.audiobooksHandle,
   );
 
   protected readonly loading = signal<boolean>(true);

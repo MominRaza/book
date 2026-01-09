@@ -8,12 +8,16 @@ export const routes: Routes = [
   {
     path: "",
     loadComponent: () => import("./pages/home").then((m) => m.Home),
-    resolve: { handles: handlesResolver },
+    resolve: { directoryHandles: handlesResolver },
   },
   {
     path: "setup",
     loadComponent: () => import("./pages/setup").then((m) => m.Setup),
-    resolve: { handles: handlesResolver, books: booksResolver, audiobooks: audiobooksResolver },
+    resolve: {
+      directoryHandles: handlesResolver,
+      books: booksResolver,
+      audiobooks: audiobooksResolver,
+    },
   },
   {
     path: "library",

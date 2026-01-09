@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -9,8 +9,9 @@ import { Audiobook } from "../models/audiobook";
 import { Book } from "../models/book";
 import { AuthorName } from "../pipes/auther-name";
 import { BookTitle } from "../pipes/book-title";
-import { Handles } from "../resolver/handles";
+import { DirectoryHandles } from "../resolver/handles";
 import { TruncatedTooltip } from "../directives/truncated-tooltip";
+import { Link } from "../models/link";
 
 @Component({
   selector: "app-setup",
@@ -29,7 +30,7 @@ import { TruncatedTooltip } from "../directives/truncated-tooltip";
     <mat-toolbar>
       <span>Setup Books & Audiobooks Links</span>
       <div [style.flex]="1"></div>
-      <button [matButton]="'filled'">
+      <button [matButton]="'filled'" [disabled]="links().length === 0">
         <mat-icon>check</mat-icon> Save
       </button>
     </mat-toolbar>
@@ -39,11 +40,16 @@ import { TruncatedTooltip } from "../directives/truncated-tooltip";
           <mat-card-title>Books</mat-card-title>
         </mat-card-header>
         <mat-list>
-          @for (book of books(); track book.identifier) {
+          @for (book of books(); track book.id) {
             <mat-list-item>
-              <div matListItemTitle>{{ book.title | bookTitle }}</div>
+              <div matListItemTitle [matTooltip]="book.title | bookTitle" truncatedTooltip>{{ book.title | bookTitle }}</div>
               <div matListItemLine>{{ book.author | authorName }}</div>
               <div matListItemMeta>
+                @if (linkedAudiobook(book)) {
+                  <mat-icon>audiotrack</mat-icon>
+                } @else {
+                  <mat-icon>music_off</mat-icon>
+                }
               </div>
             </mat-list-item>
           }
@@ -56,9 +62,14 @@ import { TruncatedTooltip } from "../directives/truncated-tooltip";
         <mat-list>
           @for (audiobook of audiobooks(); track audiobook.id) {
             <mat-list-item>
-            <div matListItemTitle [matTooltip]="audiobook.name | bookTitle" truncatedTooltip>{{ audiobook.name | bookTitle }}</div>
+              <div matListItemTitle [matTooltip]="audiobook.name | bookTitle" truncatedTooltip>{{ audiobook.name | bookTitle }}</div>
               <div matListItemLine>{{ audiobook.tracks.length }} tracks</div>
               <div matListItemMeta>
+                @if (linkedBook(audiobook)) {
+                  <mat-icon>menu_book</mat-icon>
+                } @else {
+                  <mat-icon>menu_book_off</mat-icon>
+                }
               </div>
             </mat-list-item>
           }
@@ -89,7 +100,21 @@ import { TruncatedTooltip } from "../directives/truncated-tooltip";
   host: { class: "main" },
 })
 export class Setup {
-  protected readonly handles = input.required<Handles>();
+  protected readonly directoryHandles = input.required<DirectoryHandles>();
   protected readonly books = input.required<Book[]>();
   protected readonly audiobooks = input.required<Audiobook[]>();
+
+  protected readonly links = signal<Link[]>([]);
+
+  protected linkedAudiobook(book: Book): Audiobook | undefined {
+    const link = this.links().find((link) => link.bookId === book.id);
+    if (!link) return;
+    return this.audiobooks().find((audiobook) => audiobook.id === link.audiobookId);
+  }
+
+  protected linkedBook(audiobook: Audiobook): Book | undefined {
+    const link = this.links().find((link) => link.audiobookId === audiobook.id);
+    if (!link) return;
+    return this.books().find((book) => book.id === link.bookId);
+  }
 }

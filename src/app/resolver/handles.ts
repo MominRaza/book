@@ -3,12 +3,12 @@ import { IDBService } from "../services/idb";
 import { inject } from "@angular/core";
 import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 
-export interface Handles {
+export interface DirectoryHandles {
   booksHandle?: FileSystemDirectoryHandleWithPermissions;
   audiobooksHandle?: FileSystemDirectoryHandleWithPermissions;
 }
 
-export const handlesResolver: ResolveFn<Handles> = async () => {
+export const handlesResolver: ResolveFn<DirectoryHandles> = async () => {
   const idbService = inject(IDBService);
   const directoryHandles = await idbService.getAllDirectoryHandles();
 
