@@ -1,4 +1,6 @@
 import { Routes } from "@angular/router";
+import { audiobooksResolver } from "./resolver/audiobooks";
+import { booksResolver } from "./resolver/books";
 import { epubResolver } from "./resolver/epub";
 import { handlesResolver } from "./resolver/handles";
 
@@ -11,6 +13,7 @@ export const routes: Routes = [
   {
     path: "setup",
     loadComponent: () => import("./pages/setup").then((m) => m.Setup),
+    resolve: { handles: handlesResolver, books: booksResolver, audiobooks: audiobooksResolver },
   },
   {
     path: "library",
