@@ -17,6 +17,8 @@ import { MatListModule } from "@angular/material/list";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { Location } from "@angular/common";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { BookTitle } from "../pipes/book-title";
+import { AuthorName } from "../pipes/auther-name";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
@@ -36,6 +38,8 @@ type FoliateElement = HTMLElement & {
     MatListModule,
     MatToolbarModule,
     MatExpansionModule,
+    BookTitle,
+    AuthorName,
   ],
   template: `
     <mat-drawer-container>
@@ -43,8 +47,8 @@ type FoliateElement = HTMLElement & {
         <div class="cover-metadata">
           <img [src]="coverUrl()" />
           <div class="metadata">
-            <h1>{{ metadata().title }}</h1>
-            <p>{{ metadata().author.name }}</p>
+            <h1>{{ metadata().title | bookTitle }}</h1>
+            <p>{{ metadata().author.name | authorName }}</p>
           </div>
         </div>
         <mat-accordion>
