@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, OnDestroy } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
@@ -42,7 +42,7 @@ import { BookTitle } from "../pipes/book-title";
       </button>
       <mat-menu #playlistMenu="matMenu">
         @for (track of playerService.tracks(); track track.id) {
-          <button mat-menu-item>{{track.name | trackName}}</button>
+          <button mat-menu-item (click)="playerService.setTrack(track)">{{track.name | trackName}}</button>
         }
       </mat-menu>
       <button matIconButton [matMenuTriggerFor]="volumeMenu">
@@ -60,7 +60,6 @@ import { BookTitle } from "../pipes/book-title";
   `,
   styles: `
     :host {
-      display: block;
       position: absolute;
       bottom: 0;
       width: 100%;
@@ -78,7 +77,12 @@ import { BookTitle } from "../pipes/book-title";
       margin-inline: 1.25rem;
     }
   `,
+  host: { "[style.display]": 'playerService.audiobook() ? "block" : "none"' },
 })
-export class Player {
+export class Player implements OnDestroy {
   protected readonly playerService = inject(PlayerService);
+
+  ngOnDestroy(): void {
+    this.playerService.destroy();
+  }
 }

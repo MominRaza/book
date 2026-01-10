@@ -10,44 +10,66 @@ export class PlayerService {
   readonly tracks = computed(() => this._audiobook()?.tracks || []);
   private readonly _track = signal<Track | undefined>(undefined);
   readonly track = this._track.asReadonly();
-  private readonly audio = signal<HTMLAudioElement | undefined>(undefined);
+  private audio: HTMLAudioElement | undefined = undefined;
   private readonly _isPlaying = signal<boolean>(false);
   readonly isPlaying = this._isPlaying.asReadonly();
-  readonly duration = computed(() => this.audio()?.duration);
+  readonly duration = computed(() => 0);
+  private audioSrc: string | null = null;
 
   setAudiobook(audiobook: Audiobook) {
     this._audiobook.set(audiobook);
-    this._track.set(audiobook.tracks[0]);
+    this.setTrack(audiobook.tracks[0]);
+  }
+
+  setTrack(track: Track) {
+    this._track.set(track);
     this.initializeAudio();
   }
 
   private async initializeAudio() {
-    const file = await this.track()?.handle.getFile();
+    this.destroy(false);
+    const file = await this._track()?.handle.getFile();
     if (!file) return;
     const url = URL.createObjectURL(file);
-    const audio = new Audio(url);
-    this.audio.set(audio);
-    this._isPlaying.set(false);
+    this.audioSrc = url;
+    this.audio = new Audio(url);
+    if (this._isPlaying()) {
+      this.audio.play();
+    }
   }
 
   playPause() {
-    const audio = this.audio();
-    if (!audio) return;
+    if (!this.audio) return;
     if (this.isPlaying()) {
-      audio.pause();
+      this.audio.pause();
     } else {
-      audio.play();
+      this.audio.play();
     }
     this._isPlaying.update((isPlaying) => !isPlaying);
   }
 
   seekBy(seconds: number) {
-    const audio = this.audio();
-    if (!audio) return;
+    if (!this.audio) return;
 
-    const duration = audio.duration;
-    const nextTime = Math.min(Math.max(0, audio.currentTime + seconds), duration);
+    const duration = this.audio.duration;
+    const nextTime = Math.min(Math.max(0, this.audio.currentTime + seconds), duration);
 
-    audio.currentTime = nextTime;
+    this.audio.currentTime = nextTime;
+  }
+
+  destroy(destroySignals: boolean = true) {
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = "";
+    }
+    if (this.audioSrc) {
+      URL.revokeObjectURL(this.audioSrc);
+    }
+
+    if (destroySignals) {
+      this._audiobook.set(undefined);
+      this._track.set(undefined);
+      this._isPlaying.set(false);
+    }
   }
 }
