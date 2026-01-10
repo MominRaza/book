@@ -10,8 +10,9 @@ export class PlayerService {
   readonly track = signal<Track | undefined>(undefined);
   private audio: HTMLAudioElement | undefined = undefined;
   readonly isPlaying = signal<boolean>(false);
-  readonly duration = computed(() => 0);
-  private audioSrc: string | null = null;
+  readonly currentTime = signal<number>(0);
+  readonly duration = signal<number | undefined>(undefined);
+  private audioSrc: string | undefined = undefined;
   readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
   readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
   readonly volume = signal<number>(0.75);
@@ -37,6 +38,22 @@ export class PlayerService {
     if (this.isPlaying()) {
       this.audio.play();
     }
+
+    this.audio.addEventListener("loadedmetadata", () => {
+      this.duration.set(this.audio?.duration);
+    });
+
+    this.audio.addEventListener("timeupdate", () => {
+      this.currentTime.set(this.audio?.currentTime || 0);
+    });
+
+    this.audio.addEventListener("ended", () => {
+      if (this.hasNextTrack()) {
+        this.seekTrack(1);
+      } else {
+        this.isPlaying.set(false);
+      }
+    });
   }
 
   playPause() {
@@ -58,22 +75,6 @@ export class PlayerService {
     this.audio.currentTime = nextTime;
   }
 
-  destroy(destroySignals: boolean = true) {
-    if (this.audio) {
-      this.audio.pause();
-      this.audio.src = "";
-    }
-    if (this.audioSrc) {
-      URL.revokeObjectURL(this.audioSrc);
-    }
-
-    if (destroySignals) {
-      this.audiobook.set(undefined);
-      this.track.set(undefined);
-      this.isPlaying.set(false);
-    }
-  }
-
   seekTrack(direction: 1 | -1) {
     const tracks = this.tracks();
     const currentTrack = this.track();
@@ -89,6 +90,32 @@ export class PlayerService {
     this.volume.set(volume);
     if (this.audio) {
       this.audio.volume = volume;
+    }
+  }
+
+  setCurrentTime(event: Event) {
+    const time = (event.target as HTMLInputElement).valueAsNumber;
+    if (this.audio) {
+      this.audio.currentTime = time;
+    }
+    this.currentTime.set(time);
+  }
+
+  destroy(destroySignals: boolean = true) {
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = "";
+    }
+    if (this.audioSrc) {
+      URL.revokeObjectURL(this.audioSrc);
+    }
+
+    if (destroySignals) {
+      this.audiobook.set(undefined);
+      this.track.set(undefined);
+      this.isPlaying.set(false);
+      this.currentTime.set(0);
+      this.duration.set(undefined);
     }
   }
 }

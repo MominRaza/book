@@ -6,17 +6,27 @@ import { MatSliderModule } from "@angular/material/slider";
 import { PlayerService } from "../services/player";
 import { TrackName } from "../pipes/track-name";
 import { BookTitle } from "../pipes/book-title";
+import { Time } from "../pipes/time";
 
 @Component({
   selector: "app-player",
-  imports: [MatButtonModule, MatIconModule, MatSliderModule, MatMenuModule, TrackName, BookTitle],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    MatSliderModule,
+    MatMenuModule,
+    TrackName,
+    BookTitle,
+    Time,
+  ],
   template: `
     <div class="progress-container">
-      <span>0:00</span>
-      <mat-slider class="progress-bar" [max]="playerService.duration() || 0">
-        <input matSliderThumb/>
+      <span>{{ playerService.currentTime() | time }}</span>
+      @let duration = playerService.duration() || 0;
+      <mat-slider class="progress-bar" [max]="duration" [step]="0">
+        <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event)" />
       </mat-slider>
-      <span>{{ playerService.duration() }}</span>
+      <span>{{ duration | time }}</span>
     </div>
     <div class="player-container">
       <img src="" />
