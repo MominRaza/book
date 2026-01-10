@@ -19,6 +19,8 @@ import { Location } from "@angular/common";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { BookTitle } from "../pipes/book-title";
 import { AuthorName } from "../pipes/auther-name";
+import { StateService } from "../services/state";
+import { Router } from "@angular/router";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
@@ -97,6 +99,9 @@ type FoliateElement = HTMLElement & {
 })
 export class Reader implements OnInit, OnDestroy {
   protected readonly location = inject(Location);
+  private readonly stateService = inject(StateService);
+  private readonly router = inject(Router);
+
   private readonly elementRef = viewChild.required<ElementRef<HTMLElement>>("foliateContainer");
   private foliate?: FoliateElement;
   protected readonly epub = input.required<EPUBType>();
@@ -107,6 +112,10 @@ export class Reader implements OnInit, OnDestroy {
   showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
+    if (!this.stateService.permissionsGranted()) {
+      this.router.navigate(["../../"], { replaceUrl: true });
+    }
+
     const coverBlob = await this.epub().getCover();
     if (coverBlob) this.coverUrl.set(URL.createObjectURL(coverBlob));
 

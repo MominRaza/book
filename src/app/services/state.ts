@@ -67,4 +67,8 @@ export class StateService {
   setLinks(links: Link[]) {
     this._links.set(links);
   }
+
+  setPermissionsGranted(granted: boolean) {
+    this._permissionsGranted.set(granted);
+  }
 }

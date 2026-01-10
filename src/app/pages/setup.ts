@@ -135,7 +135,10 @@ export class Setup implements OnInit {
   protected readonly links = this.stateService.links;
 
   ngOnInit(): void {
-    if (this.books().length === 0 || this.audiobooks().length === 0) {
+    if (
+      !this.stateService.permissionsGranted() ||
+      (this.books().length === 0 && this.audiobooks().length === 0)
+    ) {
       this.router.navigate(["../"], { replaceUrl: true });
     }
   }

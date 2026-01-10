@@ -142,6 +142,7 @@ export class Home implements OnInit {
       await this.audiobooksService.saveAudiobooks(audiobooksHandle);
     }
 
+    this.stateService.setPermissionsGranted(true);
     this.router.navigate(["/setup"], { replaceUrl: true });
   }
 }
