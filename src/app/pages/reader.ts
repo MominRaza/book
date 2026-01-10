@@ -21,6 +21,7 @@ import { BookTitle } from "../pipes/book-title";
 import { AuthorName } from "../pipes/auther-name";
 import { StateService } from "../services/state";
 import { Router } from "@angular/router";
+import { Player } from "../components/player";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
@@ -42,6 +43,7 @@ type FoliateElement = HTMLElement & {
     MatExpansionModule,
     BookTitle,
     AuthorName,
+    Player,
   ],
   template: `
     <mat-drawer-container>
@@ -92,6 +94,7 @@ type FoliateElement = HTMLElement & {
           </button>
         </mat-toolbar>
         <div tabindex="0" (keydown)="onKeydown($event)" class="foliate-container" #foliateContainer></div>
+        <app-player />
       </mat-drawer-content>
     </mat-drawer-container>
   `,

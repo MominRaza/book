@@ -38,6 +38,8 @@ export class AudiobooksService {
       const tracks = m4bHandles.map((handle) => this.getTrack(audiobookId, handle));
       if (tracks.length === 0) continue;
 
+      tracks.sort((a, b) => a.order - b.order);
+
       audiobooks.push({
         id: audiobookId,
         name: audiobookName,
@@ -49,9 +51,12 @@ export class AudiobooksService {
   }
 
   private getTrack(audiobookId: string, handle: FileSystemFileHandle): Track {
+    const orderMatch = handle.name.match(/^(\d{2})\s-\s/);
+    const order = orderMatch ? parseInt(orderMatch[1], 10) : -1;
     return {
       id: `${audiobookId}:${handle.name}`,
       name: handle.name,
+      order,
       handle,
     };
   }

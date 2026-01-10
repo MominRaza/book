@@ -75,14 +75,14 @@ export class IDBService {
     await tx.done;
   }
 
+  async getAudiobook(id: string) {
+    const db = await this.useDB();
+    return db.get("audiobooks", id);
+  }
+
   async getAllAudiobooks() {
     const db = await this.useDB();
     return db.getAll("audiobooks");
-  }
-
-  async setLink(bookId: string, audiobookId: string) {
-    const db = await this.useDB();
-    await db.put("links", { bookId, audiobookId });
   }
 
   async setLinks(links: Link[]) {
@@ -93,11 +93,6 @@ export class IDBService {
       tx.store.put(link);
     }
     await tx.done;
-  }
-
-  async deleteLink(bookId: string) {
-    const db = await this.useDB();
-    await db.delete("links", bookId);
   }
 
   async getLink(bookId: string) {
@@ -113,11 +108,6 @@ export class IDBService {
   async setDirectoryHandle(type: string, handle: FileSystemDirectoryHandleWithPermissions) {
     const db = await this.useDB();
     await db.put("directoryHandles", { type, handle });
-  }
-
-  async getDirectoryHandle(type: string) {
-    const db = await this.useDB();
-    return (await db.get("directoryHandles", type))?.handle;
   }
 
   async getAllDirectoryHandles() {

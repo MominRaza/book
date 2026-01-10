@@ -1,6 +1,7 @@
 export type Track = {
   id: string;
   name: string;
+  order: number;
   handle: FileSystemFileHandle;
 };
 
