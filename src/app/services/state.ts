@@ -56,6 +56,14 @@ export class StateService {
     this._audiobooksHandle.set(handle);
   }
 
+  setBooks(books: Book[]) {
+    this._books.set(books);
+  }
+
+  setAudiobooks(audiobooks: Audiobook[]) {
+    this._audiobooks.set(audiobooks);
+  }
+
   setLinks(links: Link[]) {
     this._links.set(links);
   }

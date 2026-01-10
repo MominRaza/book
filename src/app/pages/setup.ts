@@ -1,4 +1,4 @@
-import { Component, inject, linkedSignal } from "@angular/core";
+import { Component, inject, linkedSignal, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -124,7 +124,7 @@ import { StateService } from "../services/state";
   `,
   host: { class: "main" },
 })
-export class Setup {
+export class Setup implements OnInit {
   private readonly idbService = inject(IDBService);
   private readonly router = inject(Router);
   private readonly stateService = inject(StateService);
@@ -133,6 +133,12 @@ export class Setup {
   protected readonly audiobooks = this.stateService.audiobooks;
 
   protected readonly links = this.stateService.links;
+
+  ngOnInit(): void {
+    if (this.books().length === 0 || this.audiobooks().length === 0) {
+      this.router.navigate(["../"], { replaceUrl: true });
+    }
+  }
 
   protected linkedAudiobook(bookId: string): Audiobook | undefined {
     const link = this.links().find((link) => link.bookId === bookId);

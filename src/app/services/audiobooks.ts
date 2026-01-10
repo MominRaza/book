@@ -3,6 +3,7 @@ import { Audiobook, Track } from "../models/audiobook";
 import { FileService, FileSystemDirectoryHandleWithPermissions } from "./file";
 import { IDBService } from "./idb";
 import { sha256Hex } from "../utils/hash";
+import { StateService } from "./state";
 
 @Injectable({
   providedIn: "root",
@@ -10,6 +11,7 @@ import { sha256Hex } from "../utils/hash";
 export class AudiobooksService {
   private readonly fileService = inject(FileService);
   private readonly idbService = inject(IDBService);
+  private readonly stateService = inject(StateService);
 
   async saveAudiobooks(directoryHandle: FileSystemDirectoryHandleWithPermissions) {
     const hasPermission = await this.fileService.verifyPermission(directoryHandle);
@@ -19,6 +21,7 @@ export class AudiobooksService {
     if (audiobooks.length === 0) return;
 
     await this.idbService.addAudiobooks(audiobooks);
+    this.stateService.setAudiobooks(audiobooks);
   }
 
   private async readAudiobooks(root: FileSystemDirectoryHandle): Promise<Audiobook[]> {

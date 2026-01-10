@@ -2,6 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { FileService, FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { EpubService } from "../services/epub";
 import { IDBService } from "../services/idb";
+import { StateService } from "./state";
 
 @Injectable({
   providedIn: "root",
@@ -10,6 +11,7 @@ export class BooksService {
   private readonly fileService = inject(FileService);
   private epubService = inject(EpubService);
   private idbService = inject(IDBService);
+  private stateService = inject(StateService);
 
   async saveBooks(directoryHandle: FileSystemDirectoryHandleWithPermissions) {
     const hasPermission = await this.fileService.verifyPermission(directoryHandle);
@@ -24,5 +26,6 @@ export class BooksService {
     if (books.length === 0) return;
 
     await this.idbService.addBooks(books);
+    this.stateService.setBooks(books);
   }
 }

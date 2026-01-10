@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
 import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { MatButtonModule } from "@angular/material/button";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { Book } from "../models/book";
 import { BlobImage } from "../directives/blob-image";
@@ -71,13 +71,20 @@ import { StateService } from "../services/state";
   styleUrl: "./library.css",
   host: { class: "main" },
 })
-export class Library {
+export class Library implements OnInit {
   private readonly stateService = inject(StateService);
+  private readonly router = inject(Router);
   protected hasPermission = signal(false);
   protected directoryHandle = signal<FileSystemDirectoryHandleWithPermissions | null>(null);
   protected books = this.stateService.books;
   protected audiobooks = this.stateService.audiobooks;
   protected links = this.stateService.links;
+
+  ngOnInit(): void {
+    if (this.books().length === 0 && this.audiobooks().length === 0) {
+      this.router.navigate(["../"], { replaceUrl: true });
+    }
+  }
 
   protected audiobookLinked(bookId: string): boolean {
     return this.links().some((link) => link.bookId === bookId);
