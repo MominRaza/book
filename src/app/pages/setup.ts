@@ -1,4 +1,4 @@
-import { Component, inject, input, linkedSignal } from "@angular/core";
+import { Component, inject, linkedSignal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -14,6 +14,7 @@ import { Link } from "../models/link";
 import { MatMenuModule } from "@angular/material/menu";
 import { IDBService } from "../services/idb";
 import { Router } from "@angular/router";
+import { StateService } from "../services/state";
 
 @Component({
   selector: "app-setup",
@@ -126,12 +127,12 @@ import { Router } from "@angular/router";
 export class Setup {
   private readonly idbService = inject(IDBService);
   private readonly router = inject(Router);
+  private readonly stateService = inject(StateService);
 
-  protected readonly books = input.required<Book[]>();
-  protected readonly audiobooks = input.required<Audiobook[]>();
-  protected readonly _links = input.required<Link[]>({ alias: "links" });
+  protected readonly books = this.stateService.books;
+  protected readonly audiobooks = this.stateService.audiobooks;
 
-  protected readonly links = linkedSignal(this._links);
+  protected readonly links = this.stateService.links;
 
   protected linkedAudiobook(bookId: string): Audiobook | undefined {
     const link = this.links().find((link) => link.bookId === bookId);
@@ -149,7 +150,7 @@ export class Setup {
     const existingLinks = this.links().filter(
       (link) => link.bookId !== bookId && link.audiobookId !== audiobookId,
     );
-    this.links.set([...existingLinks, { bookId, audiobookId }]);
+    this.stateService.setLinks([...existingLinks, { bookId, audiobookId }]);
   }
 
   protected async saveLinks(): Promise<void> {

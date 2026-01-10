@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
 import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { MatButtonModule } from "@angular/material/button";
 import { RouterLink } from "@angular/router";
@@ -11,6 +11,7 @@ import { MatRippleModule } from "@angular/material/core";
 import { BookTitle } from "../pipes/book-title";
 import { Link } from "../models/link";
 import { Audiobook } from "../models/audiobook";
+import { StateService } from "../services/state";
 
 @Component({
   selector: "app-library",
@@ -71,11 +72,12 @@ import { Audiobook } from "../models/audiobook";
   host: { class: "main" },
 })
 export class Library {
+  private readonly stateService = inject(StateService);
   protected hasPermission = signal(false);
   protected directoryHandle = signal<FileSystemDirectoryHandleWithPermissions | null>(null);
-  protected books = input.required<Book[]>();
-  protected audiobooks = input.required<Audiobook[]>();
-  protected links = input.required<Link[]>();
+  protected books = this.stateService.books;
+  protected audiobooks = this.stateService.audiobooks;
+  protected links = this.stateService.links;
 
   protected audiobookLinked(bookId: string): boolean {
     return this.links().some((link) => link.bookId === bookId);
