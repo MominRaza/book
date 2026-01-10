@@ -5,35 +5,36 @@ import { Audiobook, Track } from "../models/audiobook";
   providedIn: "root",
 })
 export class PlayerService {
-  private readonly _audiobook = signal<Audiobook | undefined>(undefined);
-  readonly audiobook = this._audiobook.asReadonly();
-  readonly tracks = computed(() => this._audiobook()?.tracks || []);
-  private readonly _track = signal<Track | undefined>(undefined);
-  readonly track = this._track.asReadonly();
+  readonly audiobook = signal<Audiobook | undefined>(undefined);
+  readonly tracks = computed(() => this.audiobook()?.tracks || []);
+  readonly track = signal<Track | undefined>(undefined);
   private audio: HTMLAudioElement | undefined = undefined;
-  private readonly _isPlaying = signal<boolean>(false);
-  readonly isPlaying = this._isPlaying.asReadonly();
+  readonly isPlaying = signal<boolean>(false);
   readonly duration = computed(() => 0);
   private audioSrc: string | null = null;
+  readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
+  readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
+  readonly volume = signal<number>(0.75);
 
   setAudiobook(audiobook: Audiobook) {
-    this._audiobook.set(audiobook);
+    this.audiobook.set(audiobook);
     this.setTrack(audiobook.tracks[0]);
   }
 
   setTrack(track: Track) {
-    this._track.set(track);
+    this.track.set(track);
     this.initializeAudio();
   }
 
   private async initializeAudio() {
     this.destroy(false);
-    const file = await this._track()?.handle.getFile();
+    const file = await this.track()?.handle.getFile();
     if (!file) return;
     const url = URL.createObjectURL(file);
     this.audioSrc = url;
     this.audio = new Audio(url);
-    if (this._isPlaying()) {
+    this.audio.volume = this.volume();
+    if (this.isPlaying()) {
       this.audio.play();
     }
   }
@@ -45,7 +46,7 @@ export class PlayerService {
     } else {
       this.audio.play();
     }
-    this._isPlaying.update((isPlaying) => !isPlaying);
+    this.isPlaying.update((isPlaying) => !isPlaying);
   }
 
   seekBy(seconds: number) {
@@ -67,9 +68,27 @@ export class PlayerService {
     }
 
     if (destroySignals) {
-      this._audiobook.set(undefined);
-      this._track.set(undefined);
-      this._isPlaying.set(false);
+      this.audiobook.set(undefined);
+      this.track.set(undefined);
+      this.isPlaying.set(false);
+    }
+  }
+
+  seekTrack(direction: 1 | -1) {
+    const tracks = this.tracks();
+    const currentTrack = this.track();
+    if (!currentTrack) return;
+    const track = tracks.find((t) => t.order === currentTrack.order + direction);
+    if (track) {
+      this.setTrack(track);
+    }
+  }
+
+  setVolume(event: Event) {
+    const volume = (event.target as HTMLInputElement).valueAsNumber;
+    this.volume.set(volume);
+    if (this.audio) {
+      this.audio.volume = volume;
     }
   }
 }

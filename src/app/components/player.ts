@@ -22,7 +22,7 @@ import { BookTitle } from "../pipes/book-title";
       <img src="" />
       <span>{{ playerService.track()?.name | trackName }}</span>
       <span>{{ playerService.audiobook()?.name | bookTitle }}</span>
-      <button matIconButton>
+      <button matIconButton (click)="playerService.seekTrack(-1)" [disabled]="!playerService.hasPreviousTrack()">
         <mat-icon>skip_previous</mat-icon>
       </button>
       <button matIconButton (click)="playerService.seekBy(-10)">
@@ -34,7 +34,7 @@ import { BookTitle } from "../pipes/book-title";
       <button matIconButton (click)="playerService.seekBy(10)">
         <mat-icon>forward_10</mat-icon>
       </button>
-      <button matIconButton>
+      <button matIconButton (click)="playerService.seekTrack(1)" [disabled]="!playerService.hasNextTrack()">
         <mat-icon>skip_next</mat-icon>
       </button>
       <button matIconButton [matMenuTriggerFor]="playlistMenu">
@@ -42,15 +42,20 @@ import { BookTitle } from "../pipes/book-title";
       </button>
       <mat-menu #playlistMenu="matMenu">
         @for (track of playerService.tracks(); track track.id) {
-          <button mat-menu-item (click)="playerService.setTrack(track)">{{track.name | trackName}}</button>
+          <button mat-menu-item (click)="playerService.setTrack(track)">
+            @if (track.id === playerService.track()?.id) {
+              <mat-icon>play_arrow</mat-icon>
+            }
+            {{track.name | trackName}}
+          </button>
         }
       </mat-menu>
       <button matIconButton [matMenuTriggerFor]="volumeMenu">
-        <mat-icon>volume_up</mat-icon>
+        <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
       </button>
       <mat-menu #volumeMenu="matMenu">
-        <mat-slider>
-          <input matSliderThumb/>
+        <mat-slider [min]="0" [max]="1" [step]="0.02">
+          <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
         </mat-slider>
       </mat-menu>
       <button matIconButton>
