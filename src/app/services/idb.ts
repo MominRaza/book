@@ -66,11 +66,11 @@ export class IDBService {
     return db.getAll("books");
   }
 
-  async addAudiobooks(groups: Audiobook[]) {
+  async addAudiobooks(audiobooks: Audiobook[]) {
     const db = await this.useDB();
     const tx = db.transaction("audiobooks", "readwrite");
-    for (const group of groups) {
-      tx.store.put(group);
+    for (const audiobook of audiobooks) {
+      tx.store.put(audiobook);
     }
     await tx.done;
   }
@@ -83,6 +83,16 @@ export class IDBService {
   async setLink(bookId: string, audiobookId: string) {
     const db = await this.useDB();
     await db.put("links", { bookId, audiobookId });
+  }
+
+  async setLinks(links: Link[]) {
+    const db = await this.useDB();
+    const tx = db.transaction("links", "readwrite");
+    await tx.store.clear();
+    for (const link of links) {
+      tx.store.put(link);
+    }
+    await tx.done;
   }
 
   async deleteLink(bookId: string) {

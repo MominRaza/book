@@ -1,4 +1,4 @@
-import { Component, input, signal } from "@angular/core";
+import { Component, inject, input, linkedSignal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -9,9 +9,11 @@ import { Audiobook } from "../models/audiobook";
 import { Book } from "../models/book";
 import { AuthorName } from "../pipes/auther-name";
 import { BookTitle } from "../pipes/book-title";
-import { DirectoryHandles } from "../resolver/handles";
 import { TruncatedTooltip } from "../directives/truncated-tooltip";
 import { Link } from "../models/link";
+import { MatMenuModule } from "@angular/material/menu";
+import { IDBService } from "../services/idb";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-setup",
@@ -25,12 +27,13 @@ import { Link } from "../models/link";
     MatListModule,
     MatTooltipModule,
     TruncatedTooltip,
+    MatMenuModule,
   ],
   template: `
     <mat-toolbar>
       <span>Setup Books & Audiobooks Links</span>
       <div [style.flex]="1"></div>
-      <button [matButton]="'filled'" [disabled]="links().length === 0">
+      <button [matButton]="'filled'" [disabled]="links().length === 0" (click)="saveLinks()">
         <mat-icon>check</mat-icon> Save
       </button>
     </mat-toolbar>
@@ -45,15 +48,30 @@ import { Link } from "../models/link";
               <div matListItemTitle [matTooltip]="book.title | bookTitle" truncatedTooltip>{{ book.title | bookTitle }}</div>
               <div matListItemLine>{{ book.author | authorName }}</div>
               <div matListItemMeta>
-                @if (linkedAudiobook(book)) {
-                  <mat-icon>audiotrack</mat-icon>
-                } @else {
-                  <mat-icon>music_off</mat-icon>
-                }
+                @let audiobook = linkedAudiobook(book.id);
+                <button
+                  matIconButton
+                  [matMenuTriggerFor]="audiobooksMenu"
+                  [matMenuTriggerData]="{ bookId: book.id, linkedAudiobookId: audiobook?.id }"
+                  [matTooltip]="audiobook ? (audiobook?.name | bookTitle) : 'Link Audiobook'">
+                  <mat-icon>{{ audiobook ? 'link' : 'link_off' }}</mat-icon>
+                </button>
               </div>
             </mat-list-item>
           }
         </mat-list>
+        <mat-menu #audiobooksMenu="matMenu">
+          <ng-template matMenuContent let-bookId="bookId" let-linkedAudiobookId="linkedAudiobookId">
+            @for (audiobook of audiobooks(); track audiobook.id) {
+              <button mat-menu-item (click)="link(bookId, audiobook.id)">
+                @if (linkedAudiobookId === audiobook.id) {
+                  <mat-icon>check</mat-icon>
+                }
+                <span>{{ audiobook.name | bookTitle }}</span>
+              </button>
+            }
+          </ng-template>
+        </mat-menu>
       </mat-card>
       <mat-card>
         <mat-card-header>
@@ -65,15 +83,30 @@ import { Link } from "../models/link";
               <div matListItemTitle [matTooltip]="audiobook.name | bookTitle" truncatedTooltip>{{ audiobook.name | bookTitle }}</div>
               <div matListItemLine>{{ audiobook.tracks.length }} tracks</div>
               <div matListItemMeta>
-                @if (linkedBook(audiobook)) {
-                  <mat-icon>menu_book</mat-icon>
-                } @else {
-                  <mat-icon>menu_book_off</mat-icon>
-                }
+                @let book = linkedBook(audiobook.id);
+                <button
+                  matIconButton
+                  [matMenuTriggerFor]="booksMenu"
+                  [matMenuTriggerData]="{ audiobookId: audiobook.id, linkedBookId: book?.id }"
+                  [matTooltip]="book ? (book?.title | bookTitle) : 'Link Book'">
+                  <mat-icon>{{ book ? 'link' : 'link_off' }}</mat-icon>
+                </button>
               </div>
             </mat-list-item>
           }
         </mat-list>
+        <mat-menu #booksMenu="matMenu">
+          <ng-template matMenuContent let-audiobookId="audiobookId" let-linkedBookId="linkedBookId">
+            @for (book of books(); track book.id) {
+              <button mat-menu-item (click)="link(book.id, audiobookId)">
+                @if (linkedBookId === book.id) {
+                  <mat-icon>check</mat-icon>
+                }
+                <span>{{ book.title | bookTitle }}</span>
+              </button>
+            }
+          </ng-template>
+        </mat-menu>
       </mat-card>
     </div>
   `,
@@ -88,10 +121,6 @@ import { Link } from "../models/link";
       flex: 1;
     }
 
-    mat-card:first-of-type {
-      flex: 2;
-    }
-
     h2 {
       margin-inline-start: 1rem;
       margin-block-end: 0.5rem;
@@ -100,21 +129,36 @@ import { Link } from "../models/link";
   host: { class: "main" },
 })
 export class Setup {
-  protected readonly directoryHandles = input.required<DirectoryHandles>();
+  private readonly idbService = inject(IDBService);
+  private readonly router = inject(Router);
+
   protected readonly books = input.required<Book[]>();
   protected readonly audiobooks = input.required<Audiobook[]>();
+  protected readonly _links = input.required<Link[]>({ alias: "links" });
 
-  protected readonly links = signal<Link[]>([]);
+  protected readonly links = linkedSignal(this._links);
 
-  protected linkedAudiobook(book: Book): Audiobook | undefined {
-    const link = this.links().find((link) => link.bookId === book.id);
+  protected linkedAudiobook(bookId: string): Audiobook | undefined {
+    const link = this.links().find((link) => link.bookId === bookId);
     if (!link) return;
     return this.audiobooks().find((audiobook) => audiobook.id === link.audiobookId);
   }
 
-  protected linkedBook(audiobook: Audiobook): Book | undefined {
-    const link = this.links().find((link) => link.audiobookId === audiobook.id);
+  protected linkedBook(audiobookId: string): Book | undefined {
+    const link = this.links().find((link) => link.audiobookId === audiobookId);
     if (!link) return;
     return this.books().find((book) => book.id === link.bookId);
+  }
+
+  protected link(bookId: string, audiobookId: string): void {
+    const existingLinks = this.links().filter(
+      (link) => link.bookId !== bookId && link.audiobookId !== audiobookId,
+    );
+    this.links.set([...existingLinks, { bookId, audiobookId }]);
+  }
+
+  protected async saveLinks(): Promise<void> {
+    await this.idbService.setLinks(this.links());
+    this.router.navigate(["/library"]);
   }
 }

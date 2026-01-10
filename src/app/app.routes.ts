@@ -3,6 +3,7 @@ import { audiobooksResolver } from "./resolver/audiobooks";
 import { booksResolver } from "./resolver/books";
 import { epubResolver } from "./resolver/epub";
 import { handlesResolver } from "./resolver/handles";
+import { linksResolver } from "./resolver/links";
 
 export const routes: Routes = [
   {
@@ -13,11 +14,7 @@ export const routes: Routes = [
   {
     path: "setup",
     loadComponent: () => import("./pages/setup").then((m) => m.Setup),
-    resolve: {
-      directoryHandles: handlesResolver,
-      books: booksResolver,
-      audiobooks: audiobooksResolver,
-    },
+    resolve: { books: booksResolver, audiobooks: audiobooksResolver, links: linksResolver },
   },
   {
     path: "library",
