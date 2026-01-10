@@ -120,11 +120,6 @@ import { Router } from "@angular/router";
       width: 0;
       flex: 1;
     }
-
-    h2 {
-      margin-inline-start: 1rem;
-      margin-block-end: 0.5rem;
-    }
   `,
   host: { class: "main" },
 })

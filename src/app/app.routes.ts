@@ -19,6 +19,7 @@ export const routes: Routes = [
   {
     path: "library",
     loadComponent: () => import("./pages/library").then((m) => m.Library),
+    resolve: { books: booksResolver, audiobooks: audiobooksResolver, links: linksResolver },
   },
   {
     path: "library/:bookId",

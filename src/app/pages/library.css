@@ -1,14 +1,13 @@
-.no-permission {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 16px;
-    text-align: center;
+h2 {
+    margin-inline-start: 1rem;
+    margin-block-end: 0.5rem;
+
+    &:not(:first-of-type) {
+        margin-top: 3rem;
+    }
 }
 
-.books {
+.grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 8px;
@@ -26,5 +25,20 @@
 
 .book img {
     width: 100%;
+    display: block;
     aspect-ratio: 2 / 3;
+}
+
+.cover-container {
+    position: relative;
+}
+
+.cover-container mat-icon {
+    position: absolute;
+    bottom: 0.4rem;
+    right: 0.4rem;
+    padding: 0.2rem;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    color: white;
 }
