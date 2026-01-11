@@ -3,14 +3,11 @@ import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { MatButtonModule } from "@angular/material/button";
 import { Router, RouterLink } from "@angular/router";
 import { MatToolbarModule } from "@angular/material/toolbar";
-import { Book } from "../models/book";
 import { BlobImage } from "../directives/blob-image";
 import { AuthorName } from "../pipes/auther-name";
 import { MatIconModule } from "@angular/material/icon";
 import { MatRippleModule } from "@angular/material/core";
 import { BookTitle } from "../pipes/book-title";
-import { Link } from "../models/link";
-import { Audiobook } from "../models/audiobook";
 import { StateService } from "../services/state";
 
 @Component({
@@ -30,8 +27,8 @@ import { StateService } from "../services/state";
     <mat-toolbar>
       <span>Your Library</span>
       <div [style.flex]="1"></div>
-      <button matIconButton>
-        <mat-icon aria-label="Setup" routerLink="/setup">settings</mat-icon>
+      <button matIconButton routerLink="/setup">
+        <mat-icon aria-label="Setup">settings</mat-icon>
       </button>
     </mat-toolbar>
     <div class="main-content">
