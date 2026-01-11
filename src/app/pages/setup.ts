@@ -1,4 +1,4 @@
-import { Component, inject, linkedSignal, OnInit } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
@@ -10,7 +10,6 @@ import { Book } from "../models/book";
 import { AuthorName } from "../pipes/auther-name";
 import { BookTitle } from "../pipes/book-title";
 import { TruncatedTooltip } from "../directives/truncated-tooltip";
-import { Link } from "../models/link";
 import { MatMenuModule } from "@angular/material/menu";
 import { IDBService } from "../services/idb";
 import { Router } from "@angular/router";
