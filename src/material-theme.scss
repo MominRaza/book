@@ -18,6 +18,15 @@ html {
     )
   );
   @include mat.system-classes();
+  @include mat.slider-overrides(
+    (
+      inactive-track-color: var(--mat-sys-primary),
+      hover-state-layer-color: transparent,
+      focus-state-layer-color: transparent,
+      handle-width: 1rem,
+      handle-height: 1rem,
+    )
+  );
 }
 
 body {

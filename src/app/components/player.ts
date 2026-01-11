@@ -48,7 +48,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
         <div class="progress-container">
           <span>{{ playerService.currentTime() | time }}</span>
           @let duration = playerService.duration() || 0;
-          <mat-slider class="progress-bar" [max]="duration" [step]="0">
+          <mat-slider [max]="duration" [step]="0">
             <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event)" />
           </mat-slider>
           <span>{{ duration | time }}</span>
@@ -126,9 +126,9 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       height: 2.5rem;
     }
 
-    .progress-bar {
+    .progress-container mat-slider {
       flex: 1;
-      margin-inline: 1.25rem;
+      margin-inline: 1rem;
     }
 
     .player-compact {
