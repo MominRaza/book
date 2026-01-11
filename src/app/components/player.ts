@@ -96,7 +96,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       </div>
     }
 
-    <mat-menu #volumeMenu="matMenu">
+    <mat-menu class="volume-menu" #volumeMenu="matMenu">
       <mat-slider class="volume" [min]="0" [max]="1" [step]="0.02">
         <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
       </mat-slider>
@@ -142,6 +142,10 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 
     .player-compact .time {
       padding-inline: 0.75rem 0.25rem;
+    }
+
+    ::ng-deep .volume-menu .mat-mdc-menu-content {
+      padding: 0;
     }
 
     .volume {
