@@ -20,3 +20,9 @@ p {
   overflow-y: auto;
   padding: 1rem;
 }
+
+.ellipsis {
+  overflow: hidden;
+  text-wrap-mode: nowrap;
+  text-overflow: ellipsis;
+}

@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from "@angular/core";
+import { Component, inject, OnDestroy, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
@@ -7,6 +7,7 @@ import { PlayerService } from "../services/player";
 import { TrackName } from "../pipes/track-name";
 import { BookTitle } from "../pipes/book-title";
 import { Time } from "../pipes/time";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: "app-player",
@@ -18,84 +19,136 @@ import { Time } from "../pipes/time";
     TrackName,
     BookTitle,
     Time,
+    MatTooltipModule,
   ],
   template: `
-    <div class="progress-container">
-      <span>{{ playerService.currentTime() | time }}</span>
-      @let duration = playerService.duration() || 0;
-      <mat-slider class="progress-bar" [max]="duration" [step]="0">
-        <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event)" />
-      </mat-slider>
-      <span>{{ duration | time }}</span>
-    </div>
-    <div class="player-container">
-      <img src="" />
-      <span>{{ playerService.track()?.name | trackName }}</span>
-      <span>{{ playerService.audiobook()?.name | bookTitle }}</span>
-      <button matIconButton (click)="playerService.seekTrack(-1)" [disabled]="!playerService.hasPreviousTrack()">
-        <mat-icon>skip_previous</mat-icon>
-      </button>
-      <button matIconButton (click)="playerService.seekBy(-10)">
-        <mat-icon>replay_10</mat-icon>
-      </button>
-      <button matIconButton (click)="playerService.playPause()">
-        <mat-icon>{{playerService.isPlaying() ? 'pause' : 'play_arrow'}}</mat-icon>
-      </button>
-      <button matIconButton (click)="playerService.seekBy(10)">
-        <mat-icon>forward_10</mat-icon>
-      </button>
-      <button matIconButton (click)="playerService.seekTrack(1)" [disabled]="!playerService.hasNextTrack()">
-        <mat-icon>skip_next</mat-icon>
-      </button>
-      <button matIconButton [matMenuTriggerFor]="playlistMenu">
-        <mat-icon>playlist_play</mat-icon>
-      </button>
-      <mat-menu #playlistMenu="matMenu">
-        @for (track of playerService.tracks(); track track.id) {
-          <button mat-menu-item (click)="playerService.setTrack(track)">
-            @if (track.id === playerService.track()?.id) {
-              <mat-icon>play_arrow</mat-icon>
+    @if (expanded()) {
+      <div class="player mat-bg-surface-container">
+        <div>
+          <p class="mat-font-title-md ellipsis">{{ playerService.track()?.name | trackName }}</p>
+          <p class="mat-font-body-sm ellipsis">{{ playerService.audiobook()?.name | bookTitle }}</p>
+        </div>
+        <div class="controls">
+          <button matIconButton (click)="playerService.seekTrack(-1)" [disabled]="!playerService.hasPreviousTrack()">
+            <mat-icon>skip_previous</mat-icon>
+          </button>
+          <button matIconButton (click)="playerService.seekBy(-30)">
+            <mat-icon>replay_30</mat-icon>
+          </button>
+          <button matIconButton (click)="playerService.playPause()">
+            <mat-icon>{{playerService.isPlaying() ? 'pause' : 'play_arrow'}}</mat-icon>
+          </button>
+          <button matIconButton (click)="playerService.seekBy(30)">
+            <mat-icon>forward_30</mat-icon>
+          </button>
+          <button matIconButton (click)="playerService.seekTrack(1)" [disabled]="!playerService.hasNextTrack()">
+            <mat-icon>skip_next</mat-icon>
+          </button>
+        </div>
+        <div class="progress-container">
+          <span>{{ playerService.currentTime() | time }}</span>
+          @let duration = playerService.duration() || 0;
+          <mat-slider class="progress-bar" [max]="duration" [step]="0">
+            <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event)" />
+          </mat-slider>
+          <span>{{ duration | time }}</span>
+        </div>
+        <div class="controls">
+          <button matIconButton [matMenuTriggerFor]="playlistMenu">
+            <mat-icon>playlist_play</mat-icon>
+          </button>
+          <mat-menu #playlistMenu="matMenu">
+            @for (track of playerService.tracks(); track track.id) {
+              <button mat-menu-item (click)="playerService.setTrack(track)">
+                @if (track.id === playerService.track()?.id) {
+                  <mat-icon>play_arrow</mat-icon>
+                }
+                {{track.name | trackName}}
+              </button>
             }
-            {{track.name | trackName}}
+          </mat-menu>
+          <button matIconButton [matMenuTriggerFor]="volumeMenu">
+            <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
+          </button>
+          <button matIconButton (click)="expanded.set(false)">
+            <mat-icon>expand_more</mat-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="player-compact mat-corner-xl mat-bg-surface-container" [matTooltip]="playerService.track()?.name | trackName">
+        @if (playerService.isPlaying()) {
+          <span class="time">
+            {{ playerService.currentTime() | time }} / {{ playerService.duration() ?? 0 | time }}
+          </span>
+        }
+        <button matIconButton [color]="'primary'" (click)="playerService.playPause()">
+          <mat-icon>{{playerService.isPlaying() ? 'pause' : 'play_arrow'}}</mat-icon>
+        </button>
+        @if (playerService.isPlaying()) {
+          <button matIconButton [matMenuTriggerFor]="volumeMenu">
+            <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
           </button>
         }
-      </mat-menu>
-      <button matIconButton [matMenuTriggerFor]="volumeMenu">
-        <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
-      </button>
-      <mat-menu #volumeMenu="matMenu">
-        <mat-slider [min]="0" [max]="1" [step]="0.02">
-          <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
-        </mat-slider>
-      </mat-menu>
-      <button matIconButton>
-        <mat-icon>expand_more</mat-icon>
-      </button>
-    </div>
+        <button matIconButton (click)="expanded.set(true)">
+          <mat-icon>expand_less</mat-icon>
+        </button>
+      </div>
+    }
+
+    <mat-menu #volumeMenu="matMenu">
+      <mat-slider [min]="0" [max]="1" [step]="0.02">
+        <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
+      </mat-slider>
+    </mat-menu>
   `,
   styles: `
-    :host {
+    .player {
       position: absolute;
       bottom: 0;
-      width: 100%;
-      background: black;
+      left: 0;
+      right: 0;
+      padding: 0.25rem 0.5rem;
+      display: grid;
+      grid-template-columns: minmax(100px, 250px) auto 1fr auto;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .controls {
+      display: flex;
     }
 
     .progress-container {
       display: flex;
       align-items: center;
-      padding-inline: 0.75rem;
+      height: 3rem;
     }
 
     .progress-bar {
       flex: 1;
       margin-inline: 1.25rem;
     }
+
+    .player-compact {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      padding: 0.25rem;
+      margin: 0.25rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .player-compact .time {
+      padding-inline: 0.75rem 0.25rem;
+    }
   `,
   host: { "[style.display]": 'playerService.audiobook() ? "block" : "none"' },
 })
 export class Player implements OnDestroy {
   protected readonly playerService = inject(PlayerService);
+  protected readonly expanded = signal(false);
 
   ngOnDestroy(): void {
     this.playerService.destroy();
