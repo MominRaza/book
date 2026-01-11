@@ -97,7 +97,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     }
 
     <mat-menu #volumeMenu="matMenu">
-      <mat-slider [min]="0" [max]="1" [step]="0.02">
+      <mat-slider class="volume" [min]="0" [max]="1" [step]="0.02">
         <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
       </mat-slider>
     </mat-menu>
@@ -108,7 +108,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 0.25rem 0.5rem;
+      padding: 0.25rem;
+      padding-inline-start: 0.5rem;
       display: grid;
       grid-template-columns: minmax(100px, 250px) auto 1fr auto;
       align-items: center;
@@ -122,7 +123,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     .progress-container {
       display: flex;
       align-items: center;
-      height: 3rem;
+      height: 2.5rem;
     }
 
     .progress-bar {
@@ -134,7 +135,6 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       position: absolute;
       bottom: 0;
       right: 0;
-      padding: 0.25rem;
       margin: 0.25rem;
       display: flex;
       align-items: center;
@@ -142,6 +142,10 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 
     .player-compact .time {
       padding-inline: 0.75rem 0.25rem;
+    }
+
+    .volume {
+      margin-inline: 21px;
     }
   `,
   host: { "[style.display]": 'playerService.audiobook() ? "block" : "none"' },
