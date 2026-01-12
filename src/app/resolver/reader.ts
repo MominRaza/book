@@ -4,6 +4,7 @@ import { inject } from "@angular/core";
 import { EpubService } from "../services/epub";
 import { PlayerService } from "../services/player";
 import { ReaderService } from "../services/reader";
+import { StateService } from "../services/state";
 
 export const readerResolver: ResolveFn<void> = async (route) => {
   const idbService = inject(IDBService);
@@ -11,6 +12,9 @@ export const readerResolver: ResolveFn<void> = async (route) => {
   const router = inject(Router);
   const readerService = inject(ReaderService);
   const playerService = inject(PlayerService);
+  const stateService = inject(StateService);
+
+  if (!stateService.permissionsGranted()) return new RedirectCommand(router.parseUrl("../../"));
 
   const bookId = route.paramMap.get("bookId")!;
   const book = await idbService.getBook(bookId);
