@@ -8,7 +8,6 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { Audiobook } from "../models/audiobook";
 import { Book } from "../models/book";
 import { AuthorName } from "../pipes/auther-name";
-import { BookTitle } from "../pipes/book-title";
 import { TruncatedTooltip } from "../directives/truncated-tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { IDBService } from "../services/idb";
@@ -21,7 +20,6 @@ import { StateService } from "../services/state";
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
-    BookTitle,
     AuthorName,
     MatCardModule,
     MatListModule,
@@ -45,7 +43,7 @@ import { StateService } from "../services/state";
         <mat-list>
           @for (book of books(); track book.id) {
             <mat-list-item>
-              <div matListItemTitle [matTooltip]="book.title | bookTitle" truncatedTooltip>{{ book.title | bookTitle }}</div>
+              <div matListItemTitle [matTooltip]="book.title" truncatedTooltip>{{ book.title }}</div>
               <div matListItemLine>{{ book.author | authorName }}</div>
               <div matListItemMeta>
                 @let audiobook = linkedAudiobook(book.id);
@@ -88,7 +86,7 @@ import { StateService } from "../services/state";
                   matIconButton
                   [matMenuTriggerFor]="booksMenu"
                   [matMenuTriggerData]="{ audiobookId: audiobook.id, linkedBookId: book?.id }"
-                  [matTooltip]="book ? (book?.title | bookTitle) : 'Link Book'">
+                  [matTooltip]="book ? book.title : 'Link Book'">
                   <mat-icon>{{ book ? 'link' : 'link_off' }}</mat-icon>
                 </button>
               </div>
@@ -102,7 +100,7 @@ import { StateService } from "../services/state";
                 @if (linkedBookId === book.id) {
                   <mat-icon>check</mat-icon>
                 }
-                <span>{{ book.title | bookTitle }}</span>
+                <span>{{ book.title }}</span>
               </button>
             }
           </ng-template>

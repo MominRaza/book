@@ -1,14 +1,4 @@
-import {
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  signal,
-  viewChild,
-} from "@angular/core";
+import { Component, ElementRef, inject, OnDestroy, OnInit, viewChild } from "@angular/core";
 import { EPUBType } from "../models/epub";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
@@ -17,11 +7,11 @@ import { MatListModule } from "@angular/material/list";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { Location } from "@angular/common";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { BookTitle } from "../pipes/book-title";
-import { AuthorName } from "../pipes/auther-name";
 import { StateService } from "../services/state";
 import { Router } from "@angular/router";
 import { Player } from "../components/player";
+import { ReaderService } from "../services/reader";
+import { Sidebar } from "../components/sidebar";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
@@ -41,44 +31,13 @@ type FoliateElement = HTMLElement & {
     MatListModule,
     MatToolbarModule,
     MatExpansionModule,
-    BookTitle,
-    AuthorName,
     Player,
+    Sidebar,
   ],
   template: `
     <mat-drawer-container>
       <mat-drawer #drawer>
-        <div class="cover-metadata">
-          <img [src]="coverUrl()" />
-          <div class="metadata">
-            <h1>{{ metadata().title | bookTitle }}</h1>
-            <p>{{ metadata().author.name | authorName }}</p>
-          </div>
-        </div>
-        <mat-accordion>
-          <mat-nav-list>
-            @for (item of toc(); track $index) {
-              @if (item.subitems) {
-                <mat-expansion-panel>
-                  <mat-expansion-panel-header>
-                    <mat-panel-title>
-                      <a mat-list-item (click)="goTo(item.href); drawer.close()">{{ item.label }}</a>
-                    </mat-panel-title>
-                  </mat-expansion-panel-header>
-                  <mat-nav-list>
-                    @for (subitem of item.subitems; track $index) {
-                      <a mat-list-item class="subitem" (click)="goTo(subitem.href); drawer.close()">
-                        {{ subitem.label }}
-                      </a>
-                    }
-                  </mat-nav-list>
-                </mat-expansion-panel>
-              } @else {
-                <a mat-list-item (click)="goTo(item.href); drawer.close()">{{ item.label }}</a>
-              }
-            }
-          </mat-nav-list>
-        </mat-accordion>
+        <app-sidebar (close)="drawer.close()" />
       </mat-drawer>
       <mat-drawer-content>
         <mat-toolbar>
@@ -101,26 +60,20 @@ type FoliateElement = HTMLElement & {
   styleUrl: "./reader.css",
 })
 export class Reader implements OnInit, OnDestroy {
+  protected readonly readerService = inject(ReaderService);
   protected readonly location = inject(Location);
   private readonly stateService = inject(StateService);
   private readonly router = inject(Router);
 
   private readonly elementRef = viewChild.required<ElementRef<HTMLElement>>("foliateContainer");
   private foliate?: FoliateElement;
-  protected readonly epub = input.required<EPUBType>();
+  protected readonly epub = this.readerService.epub;
   private readonly attachedDocs = new Set<Document>();
-  metadata = computed(() => this.epub().metadata);
-  coverUrl = signal<string | undefined>(undefined);
-  toc = computed(() => this.epub().toc);
-  showSidebar = signal<boolean>(false);
 
   async ngOnInit(): Promise<void> {
     if (!this.stateService.permissionsGranted()) {
       this.router.navigate(["../../"], { replaceUrl: true });
     }
-
-    const coverBlob = await this.epub().getCover();
-    if (coverBlob) this.coverUrl.set(URL.createObjectURL(coverBlob));
 
     await import("foliate-js/paginator.js");
     this.foliate = document.createElement("foliate-paginator") as FoliateElement;
@@ -134,8 +87,9 @@ export class Reader implements OnInit, OnDestroy {
       doc.addEventListener("keydown", this.onKeydown.bind(this));
       doc.addEventListener("click", this.onClick.bind(this, index));
     });
-
-    this.foliate.open(this.epub());
+    const epub = this.epub();
+    if (!epub) return;
+    this.foliate.open(epub);
     this.foliate.setStyles(`
       :root { color-scheme: light dark }
       @media (prefers-color-scheme: dark) { a:link { color: lightblue } }
@@ -180,16 +134,16 @@ export class Reader implements OnInit, OnDestroy {
     event.preventDefault();
     let href = a.getAttribute("href");
     if (href === null) return;
-    if (this.epub().isExternal(href)) {
+    if (this.epub()?.isExternal(href)) {
       globalThis.open(href, "_blank");
       return;
     }
-    href = this.epub().sections[index].resolveHref(href) ?? href;
+    href = this.epub()?.sections[index].resolveHref(href) ?? href;
     this.goTo(href);
   }
 
   goTo(href: string): void {
-    const resolved = this.epub().resolveHref(href);
+    const resolved = this.epub()?.resolveHref(href);
     if (resolved) this.foliate?.goTo(resolved);
   }
 

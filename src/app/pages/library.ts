@@ -7,7 +7,6 @@ import { BlobImage } from "../directives/blob-image";
 import { AuthorName } from "../pipes/auther-name";
 import { MatIconModule } from "@angular/material/icon";
 import { MatRippleModule } from "@angular/material/core";
-import { BookTitle } from "../pipes/book-title";
 import { StateService } from "../services/state";
 
 @Component({
@@ -20,7 +19,6 @@ import { StateService } from "../services/state";
     AuthorName,
     MatRippleModule,
     RouterLink,
-    BookTitle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -43,7 +41,7 @@ import { StateService } from "../services/state";
                   <mat-icon>headphones</mat-icon>
                 }
               </div>
-              <p class="mat-font-title-sm">{{ book.title | bookTitle }}</p>
+              <p class="mat-font-title-sm">{{ book.title }}</p>
               <p class="mat-font-body-sm">{{ book.author | authorName }}</p>
             </div>
           </div>
