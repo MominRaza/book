@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, Injector, signal } from "@angular/core";
 import { Audiobook, Track } from "../models/audiobook";
 import { ReaderService } from "./reader";
 import { Link } from "../models/link";
@@ -7,7 +7,7 @@ import { Link } from "../models/link";
   providedIn: "root",
 })
 export class PlayerService {
-  private readonly readerService = inject(ReaderService);
+  private readonly injector = inject(Injector);
   readonly audiobook = signal<Audiobook | undefined>(undefined);
   private readonly link = signal<Link | undefined>(undefined);
   readonly tracks = computed(() => this.audiobook()?.tracks || []);
@@ -31,13 +31,13 @@ export class PlayerService {
     this.link.set(link);
   }
 
-  setTrack(track: Track) {
+  setTrack(track: Track, byReader: boolean = false) {
     this.track.set(track);
     this.initializeAudio();
 
-    if (this.sync()) {
+    if (this.sync() && !byReader) {
       const href = this.link()?.chapterMap?.[track.id];
-      if (href) this.readerService.goTo(href);
+      if (href) this.injector.get(ReaderService).goTo(href, true);
     }
   }
 
@@ -117,6 +117,20 @@ export class PlayerService {
 
   toggleSync() {
     this.sync.update((s) => !s);
+  }
+
+  syncPlayer(href: string) {
+    if (!this.sync()) return;
+    const chapterMap = this.link()?.chapterMap;
+    if (!chapterMap) return;
+
+    const trackId = Object.keys(chapterMap).find((id) => chapterMap[id] === href);
+    if (!trackId) return;
+
+    const track = this.tracks().find((t) => t.id === trackId);
+    if (track && track !== this.track()) {
+      this.setTrack(track, true);
+    }
   }
 
   destroy(destroySignals: boolean = true) {

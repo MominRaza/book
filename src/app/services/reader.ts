@@ -1,6 +1,7 @@
-import { Injectable, signal } from "@angular/core";
+import { inject, Injectable, signal } from "@angular/core";
 import { Book } from "../models/book";
 import { EPUBType } from "../models/epub";
+import { PlayerService } from "./player";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
@@ -15,6 +16,7 @@ type FoliateElement = HTMLElement & {
   providedIn: "root",
 })
 export class ReaderService {
+  private readonly playerService = inject(PlayerService);
   readonly book = signal<Book | undefined>(undefined);
   readonly epub = signal<EPUBType | undefined>(undefined);
 
@@ -89,9 +91,12 @@ export class ReaderService {
     this.goTo(href);
   }
 
-  goTo(href: string): void {
+  goTo(href: string, byPlayer: boolean = false): void {
     const resolved = this.epub()?.resolveHref(href);
-    if (resolved) this.foliate?.goTo(resolved);
+    if (resolved) {
+      this.foliate?.goTo(resolved);
+      if (!byPlayer) this.playerService.syncPlayer(href);
+    }
   }
 
   destroy(): void {
