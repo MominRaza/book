@@ -2,7 +2,7 @@ export type Link = {
   bookId: string;
   audiobookId: string;
 
-  chapterMap: {
+  chapterMap?: {
     [audioTrackId: string]: string;
   };
 };
