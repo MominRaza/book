@@ -55,7 +55,10 @@ export class AudiobooksService {
     const order = orderMatch ? parseInt(orderMatch[1], 10) : -1;
     return {
       id: `${audiobookId}:${handle.name}`,
-      name: handle.name,
+      name: handle.name
+        .replace(/^\d{2}\s-\s/, "")
+        .replace(/\.m4b$/, "")
+        .replace(/_/g, ":"),
       order,
       handle,
     };

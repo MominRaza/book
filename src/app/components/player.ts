@@ -4,7 +4,6 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSliderModule } from "@angular/material/slider";
 import { PlayerService } from "../services/player";
-import { TrackName } from "../pipes/track-name";
 import { BookTitle } from "../pipes/book-title";
 import { Time } from "../pipes/time";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -16,7 +15,6 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     MatIconModule,
     MatSliderModule,
     MatMenuModule,
-    TrackName,
     BookTitle,
     Time,
     MatTooltipModule,
@@ -25,7 +23,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     @if (expanded()) {
       <div class="player mat-bg-surface-container">
         <div>
-          <p class="mat-font-title-md ellipsis">{{ playerService.track()?.name | trackName }}</p>
+          <p class="mat-font-title-md ellipsis">{{ playerService.track()?.name }}</p>
           <p class="mat-font-body-sm ellipsis">{{ playerService.audiobook()?.name | bookTitle }}</p>
         </div>
         <div class="controls">
@@ -63,7 +61,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
                 @if (track.id === playerService.track()?.id) {
                   <mat-icon>play_arrow</mat-icon>
                 }
-                {{track.name | trackName}}
+                {{ track.name }}
               </button>
             }
           </mat-menu>
@@ -76,7 +74,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
         </div>
       </div>
     } @else {
-      <div class="player-compact mat-corner-xl mat-bg-surface-container" [matTooltip]="playerService.track()?.name | trackName">
+      <div class="player-compact mat-corner-xl mat-bg-surface-container" [matTooltip]="playerService.track()?.name">
         @if (playerService.isPlaying()) {
           <span class="time">
             {{ playerService.currentTime() | time }} / {{ playerService.duration() ?? 0 | time }}
