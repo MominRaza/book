@@ -43,6 +43,9 @@ import { MatTooltipModule } from "@angular/material/tooltip";
           <span>{{ duration | time }}</span>
         </div>
         <div class="controls">
+          <button matIconButton (click)="playerService.toggleSync()">
+            <mat-icon>{{ playerService.sync() ? 'sync' : 'sync_disabled' }}</mat-icon>
+          </button>
           <button matIconButton [matMenuTriggerFor]="playlistMenu">
             <mat-icon>playlist_play</mat-icon>
           </button>

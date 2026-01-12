@@ -28,7 +28,10 @@ export const readerResolver: ResolveFn<void> = async (route) => {
   const link = await idbService.getLink(bookId);
   if (link?.audiobookId) {
     const audiobook = await idbService.getAudiobook(link.audiobookId);
-    if (audiobook) playerService.setAudiobook(audiobook);
+    if (audiobook) {
+      playerService.setAudiobook(audiobook);
+      playerService.setLink(link);
+    }
   }
   return;
 };

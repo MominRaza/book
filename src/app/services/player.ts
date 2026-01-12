@@ -1,11 +1,15 @@
-import { computed, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { Audiobook, Track } from "../models/audiobook";
+import { ReaderService } from "./reader";
+import { Link } from "../models/link";
 
 @Injectable({
   providedIn: "root",
 })
 export class PlayerService {
+  private readonly readerService = inject(ReaderService);
   readonly audiobook = signal<Audiobook | undefined>(undefined);
+  private readonly link = signal<Link | undefined>(undefined);
   readonly tracks = computed(() => this.audiobook()?.tracks || []);
   readonly track = signal<Track | undefined>(undefined);
   private audio: HTMLAudioElement | undefined = undefined;
@@ -16,15 +20,25 @@ export class PlayerService {
   readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
   readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
   readonly volume = signal<number>(0.75);
+  readonly sync = signal<boolean>(true);
 
   setAudiobook(audiobook: Audiobook) {
     this.audiobook.set(audiobook);
     this.setTrack(audiobook.tracks[0]);
   }
 
+  setLink(link: Link) {
+    this.link.set(link);
+  }
+
   setTrack(track: Track) {
     this.track.set(track);
     this.initializeAudio();
+
+    if (this.sync()) {
+      const href = this.link()?.chapterMap?.[track.id];
+      if (href) this.readerService.goTo(href);
+    }
   }
 
   private async initializeAudio() {
@@ -99,6 +113,10 @@ export class PlayerService {
       this.audio.currentTime = time;
     }
     this.currentTime.set(time);
+  }
+
+  toggleSync() {
+    this.sync.update((s) => !s);
   }
 
   destroy(destroySignals: boolean = true) {
