@@ -13,6 +13,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { IDBService } from "../services/idb";
 import { Router } from "@angular/router";
 import { StateService } from "../services/state";
+import { LinksService } from "../services/links";
 
 @Component({
   selector: "app-setup",
@@ -125,6 +126,7 @@ export class Setup implements OnInit {
   private readonly idbService = inject(IDBService);
   private readonly router = inject(Router);
   private readonly stateService = inject(StateService);
+  private readonly linksService = inject(LinksService);
 
   protected readonly books = this.stateService.books;
   protected readonly audiobooks = this.stateService.audiobooks;
@@ -156,7 +158,10 @@ export class Setup implements OnInit {
     const existingLinks = this.links().filter(
       (link) => link.bookId !== bookId && link.audiobookId !== audiobookId,
     );
-    this.stateService.setLinks([...existingLinks, { bookId, audiobookId }]);
+    this.stateService.setLinks([
+      ...existingLinks,
+      this.linksService.createNewLink(bookId, audiobookId),
+    ]);
   }
 
   protected async saveLinks(): Promise<void> {

@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 import { Book } from "../models/book";
 import { EPUBType } from "../models/epub";
 
@@ -17,7 +17,6 @@ type FoliateElement = HTMLElement & {
 export class ReaderService {
   readonly book = signal<Book | undefined>(undefined);
   readonly epub = signal<EPUBType | undefined>(undefined);
-  readonly toc = computed(() => this.epub()?.toc);
 
   private foliate?: FoliateElement;
   private readonly attachedDocs = new Set<Document>();

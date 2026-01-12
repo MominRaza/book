@@ -18,7 +18,7 @@ import { BlobImage } from "../directives/blob-image";
     </div>
     <mat-accordion>
       <mat-nav-list>
-        @for (item of readerService.toc(); track $index) {
+        @for (item of readerService.book()?.toc; track $index) {
           @if (item.subitems) {
             <mat-expansion-panel>
               <mat-expansion-panel-header>

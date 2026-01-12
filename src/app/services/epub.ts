@@ -39,6 +39,7 @@ export class EpubService {
       title: epub.metadata.title.replace(/--+/g, ": "),
       author: epub.metadata.author?.name,
       coverImage: await epub.getCover(),
+      toc: epub.toc,
       handle: fileHandle,
     };
   }
