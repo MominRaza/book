@@ -1,6 +1,8 @@
 import { inject, Injectable } from "@angular/core";
 import { StateService } from "./state";
 import { Link } from "../models/link";
+import { Track } from "../models/audiobook";
+import { TOC } from "../models/epub";
 
 @Injectable({
   providedIn: "root",
@@ -12,7 +14,7 @@ export class LinksService {
     const book = this.stateService.books().find((b) => b.id === bookId);
     const audiobook = this.stateService.audiobooks().find((a) => a.id === audiobookId);
     if (!book || !audiobook) throw new Error("Book or Audiobook not found");
-    return { bookId, audiobookId, chapterMap: {} };
+    return { bookId, audiobookId, chapterMap: this.chapterMap(audiobook.tracks, book.toc) };
   }
 
   linkSuggestions(): Link[] {
@@ -43,5 +45,50 @@ export class LinksService {
       }
     }
     return suggestions;
+  }
+
+  chapterMap(tracks: Track[], toc: TOC[]): Link["chapterMap"] {
+    const flatTOC: TOC[] = [];
+    const flattenTOC = (entries: TOC[]) => {
+      for (const entry of entries) {
+        flatTOC.push(entry);
+        if (entry.subitems) {
+          flattenTOC(entry.subitems);
+        }
+      }
+    };
+    flattenTOC(toc);
+
+    const normalize = (text: string) =>
+      text
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/-/g, " ")
+        .replace(" one", " 1")
+        .replace(" i:", " 1:")
+        .replace(" two", " 2")
+        .replace(" ii", " 2");
+
+    const map: Link["chapterMap"] = {};
+    for (const track of tracks) {
+      const trackName = normalize(track.name);
+
+      for (const tocEntry of flatTOC) {
+        const tocLabel = normalize(tocEntry.label).replace(/^chapter\s(\d+):\s/, "$1 ");
+
+        if (
+          trackName === tocLabel ||
+          tocLabel.includes(trackName) ||
+          trackName.includes(tocLabel)
+        ) {
+          map[track.id] = tocEntry.href;
+          console.log(`${track.name}`);
+          break;
+        }
+      }
+    }
+
+    return map;
   }
 }
