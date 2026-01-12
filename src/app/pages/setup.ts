@@ -53,7 +53,7 @@ import { StateService } from "../services/state";
                   matIconButton
                   [matMenuTriggerFor]="audiobooksMenu"
                   [matMenuTriggerData]="{ bookId: book.id, linkedAudiobookId: audiobook?.id }"
-                  [matTooltip]="audiobook ? (audiobook?.name | bookTitle) : 'Link Audiobook'">
+                  [matTooltip]="audiobook ? audiobook.name : 'Link Audiobook'">
                   <mat-icon>{{ audiobook ? 'link' : 'link_off' }}</mat-icon>
                 </button>
               </div>
@@ -67,7 +67,7 @@ import { StateService } from "../services/state";
                 @if (linkedAudiobookId === audiobook.id) {
                   <mat-icon>check</mat-icon>
                 }
-                <span>{{ audiobook.name | bookTitle }}</span>
+                <span>{{ audiobook.name }}</span>
               </button>
             }
           </ng-template>
@@ -80,7 +80,7 @@ import { StateService } from "../services/state";
         <mat-list>
           @for (audiobook of audiobooks(); track audiobook.id) {
             <mat-list-item>
-              <div matListItemTitle [matTooltip]="audiobook.name | bookTitle" truncatedTooltip>{{ audiobook.name | bookTitle }}</div>
+              <div matListItemTitle [matTooltip]="audiobook.name" truncatedTooltip>{{ audiobook.name }}</div>
               <div matListItemLine>{{ audiobook.tracks.length }} tracks</div>
               <div matListItemMeta>
                 @let book = linkedBook(audiobook.id);

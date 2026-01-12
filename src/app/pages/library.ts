@@ -57,7 +57,7 @@ import { StateService } from "../services/state";
               <div class="cover-container">
                 <img blobImg class="mat-corner-md mat-shadow-2" [src]="" [alt]="'Cover of ' + audiobook.name" />
               </div>
-              <p class="mat-font-title-sm">{{ audiobook.name | bookTitle }}</p>
+              <p class="mat-font-title-sm">{{ audiobook.name }}</p>
               <p class="mat-font-body-sm">{{ audiobook.tracks.length }} tracks</p>
             </div>
           </div>

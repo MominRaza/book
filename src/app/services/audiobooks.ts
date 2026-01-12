@@ -31,7 +31,7 @@ export class AudiobooksService {
       if (entry.kind !== "directory") continue;
 
       const directoryHandle = entry as FileSystemDirectoryHandle;
-      const audiobookName = directoryHandle.name;
+      const audiobookName = directoryHandle.name.replace(/_/g, ":");
       const audiobookId = await sha256Hex(`audiobook:${audiobookName}`);
 
       const m4bHandles = await this.fileService.readFiles(directoryHandle, ".m4b");

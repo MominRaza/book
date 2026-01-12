@@ -4,27 +4,18 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSliderModule } from "@angular/material/slider";
 import { PlayerService } from "../services/player";
-import { BookTitle } from "../pipes/book-title";
 import { Time } from "../pipes/time";
 import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: "app-player",
-  imports: [
-    MatButtonModule,
-    MatIconModule,
-    MatSliderModule,
-    MatMenuModule,
-    BookTitle,
-    Time,
-    MatTooltipModule,
-  ],
+  imports: [MatButtonModule, MatIconModule, MatSliderModule, MatMenuModule, Time, MatTooltipModule],
   template: `
     @if (expanded()) {
       <div class="player mat-bg-surface-container">
         <div>
           <p class="mat-font-title-md ellipsis">{{ playerService.track()?.name }}</p>
-          <p class="mat-font-body-sm ellipsis">{{ playerService.audiobook()?.name | bookTitle }}</p>
+          <p class="mat-font-body-sm ellipsis">{{ playerService.audiobook()?.name }}</p>
         </div>
         <div class="controls">
           <button matIconButton (click)="playerService.seekTrack(-1)" [disabled]="!playerService.hasPreviousTrack()">
