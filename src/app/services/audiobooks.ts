@@ -58,7 +58,8 @@ export class AudiobooksService {
       name: handle.name
         .replace(/^\d{2}\s-\s/, "")
         .replace(/\.m4b$/, "")
-        .replace(/_/g, ":"),
+        .replace(/_/g, ":")
+        .replace("Ii: ", "II: "),
       order,
       handle,
     };

@@ -121,7 +121,7 @@ export class ReaderService {
 
   goToFraction(fraction: number): void {
     const currentPage = this.currentPage();
-    const desiredPage = Math.min(Math.round(fraction * this.totalPages()), this.totalPages());
+    const desiredPage = Math.min(Math.round(fraction * this.totalPages()), this.totalPages() - 1);
 
     if (desiredPage === currentPage) return;
 

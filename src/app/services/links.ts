@@ -68,14 +68,15 @@ export class LinksService {
         .replace(" one", " 1")
         .replace(" i:", " 1:")
         .replace(" two", " 2")
-        .replace(" ii", " 2");
+        .replace(" ii", " 2")
+        .replace(/^chapter\s(\d+):\s/, "$1 ");
 
     const map: Link["chapterMap"] = {};
     for (const track of tracks) {
       const trackName = normalize(track.name);
 
       for (const tocEntry of flatTOC) {
-        const tocLabel = normalize(tocEntry.label).replace(/^chapter\s(\d+):\s/, "$1 ");
+        const tocLabel = normalize(tocEntry.label);
 
         if (
           trackName === tocLabel ||

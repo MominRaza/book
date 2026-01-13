@@ -20,8 +20,8 @@ export class PlayerService {
   readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
   readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
   readonly volume = signal<number>(0.75);
-  private readonly _sync = signal<boolean>(true);
-  readonly sync = computed(() => this._sync() && this.href() !== undefined);
+  readonly sync = signal<boolean>(true);
+  readonly canSync = computed(() => this.sync() && this.href() !== undefined);
   private readonly href = computed(() => this.link()?.chapterMap?.[this.track()?.id ?? ""]);
 
   setAudiobook(audiobook: Audiobook) {
@@ -60,7 +60,7 @@ export class PlayerService {
 
     this.audio.addEventListener("timeupdate", () => {
       this.currentTime.set(this.audio?.currentTime || 0);
-      if (this.sync()) {
+      if (this.canSync()) {
         this.injector.get(ReaderService).goToFraction(this.currentTime() / (this.duration() || 1));
       }
     });
@@ -120,7 +120,7 @@ export class PlayerService {
   }
 
   setCurrentTimeByFraction(fraction: number) {
-    if (!this.sync()) return;
+    if (!this.canSync()) return;
     const time = fraction * (this.duration() || 1);
     if (this.audio) {
       this.audio.currentTime = time;
@@ -129,7 +129,7 @@ export class PlayerService {
   }
 
   toggleSync() {
-    this._sync.update((s) => !s);
+    this.sync.update((s) => !s);
     if (this.sync()) {
       this.syncReader();
     }
