@@ -83,7 +83,6 @@ export class LinksService {
           trackName.includes(tocLabel)
         ) {
           map[track.id] = tocEntry.href;
-          console.log(`${track.name}`);
           break;
         }
       }

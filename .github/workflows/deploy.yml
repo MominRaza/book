@@ -30,6 +30,8 @@ jobs:
         run: bun install
       - name: Run linter
         run: bun run lint
+      - name: Run tests
+        run: bun run test
       - name: Build static content
         run: bun run build --base-href "/book/"
       - name: Setup Pages
