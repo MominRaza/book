@@ -36,8 +36,7 @@ export class PlayerService {
     this.initializeAudio();
 
     if (this.sync() && !byReader) {
-      const href = this.link()?.chapterMap?.[track.id];
-      if (href) this.injector.get(ReaderService).goTo(href, true);
+      this.syncReader();
     }
   }
 
@@ -118,8 +117,20 @@ export class PlayerService {
     this.currentTime.set(time);
   }
 
+  setCurrentTimeByFraction(fraction: number) {
+    if (!this.sync()) return;
+    const time = fraction * (this.duration() || 1);
+    if (this.audio) {
+      this.audio.currentTime = time;
+    }
+    this.currentTime.set(time);
+  }
+
   toggleSync() {
     this.sync.update((s) => !s);
+    if (this.sync()) {
+      this.syncReader();
+    }
   }
 
   syncPlayer(href: string) {
@@ -134,6 +145,11 @@ export class PlayerService {
     if (track && track !== this.track()) {
       this.setTrack(track, true);
     }
+  }
+
+  private syncReader() {
+    const href = this.link()?.chapterMap?.[this.track()?.id ?? ""];
+    if (href) this.injector.get(ReaderService).goTo(href, true);
   }
 
   destroy(destroySignals: boolean = true) {

@@ -107,18 +107,25 @@ export class ReaderService {
   }
 
   private onRelocate(event: Event): void {
-    const detail = (event as CustomEvent<{ index: number; fraction: number; size: number }>).detail;
+    const detail = (
+      event as CustomEvent<{ index: number; fraction: number; size: number; reason: string }>
+    ).detail;
     this.currentIndex.set(detail.index);
     this.pageSize.set(detail.size);
-    this.currentPage.set(Math.round(detail.fraction / detail.size) + 1);
+    this.currentPage.set(Math.round(detail.fraction / detail.size));
+
+    if (detail.reason === "page") {
+      this.playerService.setCurrentTimeByFraction(detail.fraction);
+    }
   }
 
   goToFraction(fraction: number): void {
+    const currentPage = this.currentPage();
     const desiredPage = Math.min(Math.round(fraction * this.totalPages()), this.totalPages());
 
-    if (desiredPage === this.currentPage()) return;
+    if (desiredPage === currentPage) return;
 
-    const anchor = desiredPage * this.pageSize();
+    const anchor = (fraction >= 0.5 ? desiredPage + 1 : desiredPage) * this.pageSize();
     this.foliate?.goTo({ index: this.currentIndex(), anchor });
   }
 
