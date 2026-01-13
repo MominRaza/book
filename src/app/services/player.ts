@@ -20,7 +20,9 @@ export class PlayerService {
   readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
   readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
   readonly volume = signal<number>(0.75);
-  readonly sync = signal<boolean>(true);
+  private readonly _sync = signal<boolean>(true);
+  readonly sync = computed(() => this._sync() && this.href() !== undefined);
+  private readonly href = computed(() => this.link()?.chapterMap?.[this.track()?.id ?? ""]);
 
   setAudiobook(audiobook: Audiobook) {
     this.audiobook.set(audiobook);
@@ -127,7 +129,7 @@ export class PlayerService {
   }
 
   toggleSync() {
-    this.sync.update((s) => !s);
+    this._sync.update((s) => !s);
     if (this.sync()) {
       this.syncReader();
     }
@@ -148,7 +150,7 @@ export class PlayerService {
   }
 
   private syncReader() {
-    const href = this.link()?.chapterMap?.[this.track()?.id ?? ""];
+    const href = this.href();
     if (href) this.injector.get(ReaderService).goTo(href, true);
   }
 
