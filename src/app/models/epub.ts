@@ -3,7 +3,7 @@ export type EPUBType = {
   toc: TOC[];
   getCover: () => Promise<Blob | undefined>;
   sections: { resolveHref: (href: string) => string }[];
-  resolveHref: (href: string) => { index: number; anchor: string | null };
+  resolveHref: (href: string) => { index: number; anchor?: number };
   isExternal: (href: string) => boolean;
 };
 

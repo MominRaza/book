@@ -59,6 +59,9 @@ export class PlayerService {
 
     this.audio.addEventListener("timeupdate", () => {
       this.currentTime.set(this.audio?.currentTime || 0);
+      if (this.sync()) {
+        this.injector.get(ReaderService).goToFraction(this.currentTime() / (this.duration() || 1));
+      }
     });
 
     this.audio.addEventListener("ended", () => {

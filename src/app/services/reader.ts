@@ -1,11 +1,11 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { Book } from "../models/book";
 import { EPUBType } from "../models/epub";
 import { PlayerService } from "./player";
 
 type FoliateElement = HTMLElement & {
   open: (book: EPUBType) => void;
-  goTo: (target: { index: number }) => void;
+  goTo: (target: { index: number; anchor?: number }) => void;
   prev: () => void;
   next: () => void;
   setStyles: (styles: string) => void;
@@ -19,6 +19,11 @@ export class ReaderService {
   private readonly playerService = inject(PlayerService);
   readonly book = signal<Book | undefined>(undefined);
   readonly epub = signal<EPUBType | undefined>(undefined);
+
+  private readonly currentIndex = signal<number>(0);
+  private readonly currentPage = signal<number>(1);
+  private readonly pageSize = signal<number>(1);
+  private readonly totalPages = computed(() => Math.round(1 / this.pageSize()));
 
   private foliate?: FoliateElement;
   private readonly attachedDocs = new Set<Document>();
@@ -36,6 +41,8 @@ export class ReaderService {
       doc.addEventListener("keydown", this.onKeydown.bind(this));
       doc.addEventListener("click", this.onClick.bind(this, index));
     });
+    this.foliate.addEventListener("relocate", this.onRelocate.bind(this));
+
     const epub = this.epub();
     if (!epub) return;
     this.foliate.open(epub);
@@ -97,6 +104,22 @@ export class ReaderService {
       this.foliate?.goTo(resolved);
       if (!byPlayer) this.playerService.syncPlayer(href);
     }
+  }
+
+  private onRelocate(event: Event): void {
+    const detail = (event as CustomEvent<{ index: number; fraction: number; size: number }>).detail;
+    this.currentIndex.set(detail.index);
+    this.pageSize.set(detail.size);
+    this.currentPage.set(Math.round(detail.fraction / detail.size) + 1);
+  }
+
+  goToFraction(fraction: number): void {
+    const desiredPage = Math.min(Math.round(fraction * this.totalPages()), this.totalPages());
+
+    if (desiredPage === this.currentPage()) return;
+
+    const anchor = desiredPage * this.pageSize();
+    this.foliate?.goTo({ index: this.currentIndex(), anchor });
   }
 
   destroy(): void {
