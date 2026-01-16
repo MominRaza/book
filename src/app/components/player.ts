@@ -6,10 +6,19 @@ import { MatSliderModule } from "@angular/material/slider";
 import { PlayerService } from "../services/player";
 import { Time } from "../pipes/time";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatDividerModule } from "@angular/material/divider";
 
 @Component({
   selector: "app-player",
-  imports: [MatButtonModule, MatIconModule, MatSliderModule, MatMenuModule, Time, MatTooltipModule],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    MatSliderModule,
+    MatMenuModule,
+    Time,
+    MatTooltipModule,
+    MatDividerModule,
+  ],
   template: `
     @if (expanded()) {
       <div class="player mat-bg-surface-container">
@@ -38,7 +47,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
           <span>{{ playerService.currentTime() | time }}</span>
           @let duration = playerService.duration() || 0;
           <mat-slider [max]="duration" [step]="0">
-            <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event)" />
+            <input matSliderThumb [value]="playerService.currentTime()" (input)="playerService.setCurrentTime($event.target.valueAsNumber)" />
           </mat-slider>
           <span>{{ duration | time }}</span>
         </div>
@@ -59,6 +68,12 @@ import { MatTooltipModule } from "@angular/material/tooltip";
               </button>
             }
           </mat-menu>
+          <button
+            matIconButton
+            [matMenuTriggerFor]="speedMenu"
+            [matTooltip]="'Playback speed: ' + playerService.playbackRate() + 'x'">
+            <mat-icon>speed</mat-icon>
+          </button>
           <button matIconButton [matMenuTriggerFor]="volumeMenu">
             <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
           </button>
@@ -69,15 +84,21 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       </div>
     } @else {
       <div class="player-compact mat-corner-xl mat-bg-surface-container" [matTooltip]="playerService.track()?.name">
+        <button matIconButton [color]="'primary'" (click)="playerService.playPause()">
+          <mat-icon>{{playerService.isPlaying() ? 'pause' : 'play_arrow'}}</mat-icon>
+        </button>
         @if (playerService.isPlaying()) {
           <span class="time">
             {{ playerService.currentTime() | time }} / {{ playerService.duration() ?? 0 | time }}
           </span>
         }
-        <button matIconButton [color]="'primary'" (click)="playerService.playPause()">
-          <mat-icon>{{playerService.isPlaying() ? 'pause' : 'play_arrow'}}</mat-icon>
-        </button>
         @if (playerService.isPlaying()) {
+          <button
+            matIconButton
+            [matMenuTriggerFor]="speedMenu"
+            [matTooltip]="'Playback speed: ' + playerService.playbackRate() + 'x'">
+            <mat-icon>speed</mat-icon>
+          </button>
           <button matIconButton [matMenuTriggerFor]="volumeMenu">
             <mat-icon>{{ playerService.volume() === 0 ? 'volume_off' : playerService.volume() < 0.5 ? 'volume_down' : 'volume_up' }}</mat-icon>
           </button>
@@ -88,9 +109,24 @@ import { MatTooltipModule } from "@angular/material/tooltip";
       </div>
     }
 
+    <mat-menu class="speed-menu" #speedMenu="matMenu">
+      @for (rate of playbackRates; track rate) {
+        <button mat-menu-item (click)="playerService.setPlaybackRate(rate)">
+          @if (rate === playerService.playbackRate()) {
+            <mat-icon>check</mat-icon>
+          }
+          <span>{{ rate }}x</span>
+        </button>
+      }
+      <mat-divider />
+      <mat-slider class="slider" [min]="0.5" [max]="3.5" [step]="0.1" [discrete]="true">
+        <input matSliderThumb [value]="playerService.playbackRate()" (input)="playerService.setPlaybackRate($event.target.valueAsNumber)" />
+      </mat-slider>
+    </mat-menu>
+
     <mat-menu class="volume-menu" #volumeMenu="matMenu">
-      <mat-slider class="volume" [min]="0" [max]="1" [step]="0.02">
-        <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event)" />
+      <mat-slider class="slider" [min]="0" [max]="1" [step]="0.02" [discrete]="true" [displayWith]="displayVolume">
+        <input matSliderThumb [value]="playerService.volume()" (input)="playerService.setVolume($event.target.valueAsNumber)" />
       </mat-slider>
     </mat-menu>
   `,
@@ -133,14 +169,26 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     }
 
     .player-compact .time {
-      padding-inline: 0.75rem 0.25rem;
+      padding-inline: 0.25rem;
+    }
+
+    ::ng-deep .speed-menu .mat-mdc-menu-content {
+      padding-bottom: 0;
+    }
+
+    mat-divider {
+      margin-bottom: 0 !important;
+    }
+
+    ::ng-deep .volume-menu {
+      overflow: visible !important;
     }
 
     ::ng-deep .volume-menu .mat-mdc-menu-content {
       padding: 0;
     }
 
-    .volume {
+    .slider {
       margin-inline: 21px;
     }
   `,
@@ -149,6 +197,11 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 export class Player implements OnDestroy {
   protected readonly playerService = inject(PlayerService);
   protected readonly expanded = signal(false);
+  protected readonly playbackRates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  protected displayVolume(value: number): string {
+    return Math.round(value * 100).toString();
+  }
 
   ngOnDestroy(): void {
     this.playerService.destroy();

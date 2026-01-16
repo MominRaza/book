@@ -20,6 +20,7 @@ export class PlayerService {
   readonly hasNextTrack = computed(() => this.track()?.order !== this.tracks().length);
   readonly hasPreviousTrack = computed(() => this.track()?.order !== 1);
   readonly volume = signal<number>(0.75);
+  readonly playbackRate = signal<number>(1);
   readonly sync = signal<boolean>(true);
   readonly canSync = computed(() => this.sync() && this.href() !== undefined);
   private readonly href = computed(() => this.link()?.chapterMap?.[this.track()?.id ?? ""]);
@@ -50,6 +51,7 @@ export class PlayerService {
     this.audioSrc = url;
     this.audio = new Audio(url);
     this.audio.volume = this.volume();
+    this.audio.playbackRate = this.playbackRate();
     if (this.isPlaying()) {
       this.audio.play();
     }
@@ -103,16 +105,21 @@ export class PlayerService {
     }
   }
 
-  setVolume(event: Event) {
-    const volume = (event.target as HTMLInputElement).valueAsNumber;
+  setVolume(volume: number) {
     this.volume.set(volume);
     if (this.audio) {
       this.audio.volume = volume;
     }
   }
 
-  setCurrentTime(event: Event) {
-    const time = (event.target as HTMLInputElement).valueAsNumber;
+  setPlaybackRate(rate: number) {
+    this.playbackRate.set(rate);
+    if (this.audio) {
+      this.audio.playbackRate = rate;
+    }
+  }
+
+  setCurrentTime(time: number) {
     if (this.audio) {
       this.audio.currentTime = time;
     }
