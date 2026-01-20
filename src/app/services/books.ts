@@ -1,6 +1,7 @@
 import { inject, Injectable } from "@angular/core";
-import { FileService, FileSystemDirectoryHandleWithPermissions } from "../services/file";
+
 import { EpubService } from "../services/epub";
+import { FileService, FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { IDBService } from "../services/idb";
 import { StateService } from "./state";
 

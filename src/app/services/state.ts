@@ -1,9 +1,10 @@
 import { inject, Injectable, signal } from "@angular/core";
+
+import { Audiobook } from "../models/audiobook";
 import { Book } from "../models/book";
 import { Link } from "../models/link";
-import { Audiobook } from "../models/audiobook";
-import { IDBService } from "./idb";
 import { FileService, FileSystemDirectoryHandleWithPermissions } from "./file";
+import { IDBService } from "./idb";
 
 @Injectable({
   providedIn: "root",

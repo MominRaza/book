@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { DBSchema, openDB } from "idb";
-import { Book } from "../models/book";
-import { FileSystemDirectoryHandleWithPermissions } from "./file";
+
 import { Audiobook } from "../models/audiobook";
+import { Book } from "../models/book";
 import { Link } from "../models/link";
+import { FileSystemDirectoryHandleWithPermissions } from "./file";
 
 interface BookDB extends DBSchema {
   books: {

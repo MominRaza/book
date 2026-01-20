@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, Injector, signal } from "@angular/core";
+
 import { Audiobook, Track } from "../models/audiobook";
-import { ReaderService } from "./reader";
 import { Link } from "../models/link";
+import { ReaderService } from "./reader";
 
 @Injectable({
   providedIn: "root",

@@ -3,18 +3,19 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
+import { MatMenuModule } from "@angular/material/menu";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { Router } from "@angular/router";
+
+import { TruncatedTooltip } from "../directives/truncated-tooltip";
 import { Audiobook } from "../models/audiobook";
 import { Book } from "../models/book";
-import { AuthorName } from "../pipes/auther-name";
-import { TruncatedTooltip } from "../directives/truncated-tooltip";
-import { MatMenuModule } from "@angular/material/menu";
-import { IDBService } from "../services/idb";
-import { Router } from "@angular/router";
-import { StateService } from "../services/state";
-import { LinksService } from "../services/links";
 import { Link } from "../models/link";
+import { AuthorName } from "../pipes/auther-name";
+import { IDBService } from "../services/idb";
+import { LinksService } from "../services/links";
+import { StateService } from "../services/state";
 
 @Component({
   selector: "app-setup",

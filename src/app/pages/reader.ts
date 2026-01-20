@@ -1,12 +1,13 @@
+import { Location } from "@angular/common";
 import { Component, ElementRef, inject, OnDestroy, OnInit, viewChild } from "@angular/core";
-import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
+import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatToolbarModule } from "@angular/material/toolbar";
-import { Location } from "@angular/common";
+
 import { Player } from "../components/player";
-import { ReaderService } from "../services/reader";
 import { Sidebar } from "../components/sidebar";
+import { ReaderService } from "../services/reader";
 
 @Component({
   selector: "app-reader",

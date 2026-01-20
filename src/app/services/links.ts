@@ -1,8 +1,9 @@
 import { inject, Injectable } from "@angular/core";
-import { StateService } from "./state";
-import { Link } from "../models/link";
+
 import { Track } from "../models/audiobook";
 import { TOC } from "../models/epub";
+import { Link } from "../models/link";
+import { StateService } from "./state";
 
 @Injectable({
   providedIn: "root",

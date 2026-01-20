@@ -1,10 +1,11 @@
-import { TestBed } from "@angular/core/testing";
-import { LinksService } from "./links";
-import { Track } from "../models/audiobook";
-import { TOC } from "../models/epub";
-import { StateService } from "./state";
 import { signal } from "@angular/core";
+import { TestBed } from "@angular/core/testing";
+
+import { Track } from "../models/audiobook";
 import { Book } from "../models/book";
+import { TOC } from "../models/epub";
+import { LinksService } from "./links";
+import { StateService } from "./state";
 
 describe("LinksService", () => {
   let service: LinksService;

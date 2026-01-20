@@ -1,9 +1,10 @@
 import { Component, inject, output } from "@angular/core";
-import { ReaderService } from "../services/reader";
-import { AuthorName } from "../pipes/auther-name";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatListModule } from "@angular/material/list";
+
 import { BlobImage } from "../directives/blob-image";
+import { AuthorName } from "../pipes/auther-name";
+import { ReaderService } from "../services/reader";
 
 @Component({
   selector: "app-sidebar",

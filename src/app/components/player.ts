@@ -1,12 +1,13 @@
 import { Component, inject, OnDestroy, signal } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
+import { MatDividerModule } from "@angular/material/divider";
 import { MatIconModule } from "@angular/material/icon";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatSliderModule } from "@angular/material/slider";
-import { PlayerService } from "../services/player";
-import { Time } from "../pipes/time";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatDividerModule } from "@angular/material/divider";
+
+import { Time } from "../pipes/time";
+import { PlayerService } from "../services/player";
 
 @Component({
   selector: "app-player",

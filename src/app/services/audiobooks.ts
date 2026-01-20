@@ -1,8 +1,9 @@
 import { inject, Injectable } from "@angular/core";
+
 import { Audiobook, Track } from "../models/audiobook";
+import { sha256Hex } from "../utils/hash";
 import { FileService, FileSystemDirectoryHandleWithPermissions } from "./file";
 import { IDBService } from "./idb";
-import { sha256Hex } from "../utils/hash";
 import { StateService } from "./state";
 
 @Injectable({

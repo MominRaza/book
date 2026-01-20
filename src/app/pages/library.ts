@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from "@angular/core";
-import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { MatButtonModule } from "@angular/material/button";
-import { Router, RouterLink } from "@angular/router";
+import { MatRippleModule } from "@angular/material/core";
+import { MatIconModule } from "@angular/material/icon";
 import { MatToolbarModule } from "@angular/material/toolbar";
+import { Router, RouterLink } from "@angular/router";
+
 import { BlobImage } from "../directives/blob-image";
 import { AuthorName } from "../pipes/auther-name";
-import { MatIconModule } from "@angular/material/icon";
-import { MatRippleModule } from "@angular/material/core";
+import { FileSystemDirectoryHandleWithPermissions } from "../services/file";
 import { StateService } from "../services/state";
 
 @Component({

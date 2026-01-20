@@ -7,6 +7,7 @@ import {
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 import { provideServiceWorker } from "@angular/service-worker";
+
 import { routes } from "./app.routes";
 import { StateService } from "./services/state";
 

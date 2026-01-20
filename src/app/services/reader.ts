@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
+
 import { Book } from "../models/book";
 import { EPUBType } from "../models/epub";
 import { PlayerService } from "./player";

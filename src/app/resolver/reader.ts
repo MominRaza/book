@@ -1,7 +1,8 @@
-import { RedirectCommand, ResolveFn, Router } from "@angular/router";
-import { IDBService } from "../services/idb";
 import { inject } from "@angular/core";
+import { RedirectCommand, ResolveFn, Router } from "@angular/router";
+
 import { EpubService } from "../services/epub";
+import { IDBService } from "../services/idb";
 import { PlayerService } from "../services/player";
 import { ReaderService } from "../services/reader";
 import { StateService } from "../services/state";

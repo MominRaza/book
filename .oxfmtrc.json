@@ -2,11 +2,12 @@
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "overrides": [
     {
-      "files": "*.html",
+      "files": ["*.html"],
       "options": {
         "parser": "angular"
       }
     }
   ],
-  "ignorePatterns": []
+  "ignorePatterns": [],
+  "experimentalSortImports": {}
 }

@@ -1,4 +1,5 @@
 import { Routes } from "@angular/router";
+
 import { readerResolver } from "./resolver/reader";
 
 export const routes: Routes = [

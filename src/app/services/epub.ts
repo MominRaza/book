@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 
-import { EPUBType } from "../models/epub";
 import { Book } from "../models/book";
+import { EPUBType } from "../models/epub";
 import { sha256Hex } from "../utils/hash";
 
 @Injectable({ providedIn: "root" })
